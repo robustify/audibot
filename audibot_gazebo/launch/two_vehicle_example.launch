@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+
+  <include file="$(find audibot_gazebo)/launch/audibot_named_robot.launch" >
+    <arg name="robot_name" value="orange" />
+    <arg name="start_x" value="0" />
+    <arg name="start_y" value="2" />
+    <arg name="start_z" value="0" />
+    <arg name="start_yaw" value="0" />
+    <arg name="pub_tf" value="1" />
+    <arg name="tf_freq" value="100.0" />
+    <arg name="blue" value="false" />
+  </include>
+
+  <include file="$(find audibot_gazebo)/launch/audibot_named_robot.launch" >
+    <arg name="robot_name" value="blue" />
+    <arg name="start_x" value="0" />
+    <arg name="start_y" value="-2" />
+    <arg name="start_z" value="0" />
+    <arg name="start_yaw" value="0" />
+    <arg name="pub_tf" value="1" />
+    <arg name="tf_freq" value="100.0" />
+    <arg name="blue" value="true" />
+  </include>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" />
+
+</launch>

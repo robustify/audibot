@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="robot_name" default="audibot" />
+  <arg name="start_x" default="0.0" />
+  <arg name="start_y" default="0.0" />
+  <arg name="start_z" default="0.0" />
+  <arg name="start_yaw" default="0.0" />
+  <arg name="pub_tf" default="false" />
+  <arg name="blue" default="false" />
+  <arg name="tf_freq" default="100.0" />
+
+  <group ns="$(arg robot_name)" >
+    <param name="robot_description" command="$(find xacro)/xacro '$(find audibot_description)/urdf/audibot.urdf.xacro' pub_tf:=$(arg pub_tf) robot_name:=$(arg robot_name) blue:=$(arg blue)" />
+    <node pkg="gazebo_ros" type="spawn_model"  name="spawn_$(arg robot_name)" args="-urdf -param robot_description -model $(arg robot_name) -x $(arg start_x) -y $(arg start_y) -z $(arg start_z) -Y $(arg start_yaw)"/>
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="state_publisher">
+      <param name="publish_frequency" type="double" value="$(arg tf_freq)" />
+      <param name="tf_prefix" value="$(arg robot_name)" />
+    </node>
+  </group>
+
+</launch>
