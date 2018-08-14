@@ -65,7 +65,10 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
 
   pub_twist_ = n_->advertise<geometry_msgs::TwistStamped> ("twist", 1);
   twist_timer_ = n_->createTimer(ros::Duration(0.02), &AudibotInterfacePlugin::twistTimerCallback, this);
-  tf_timer_ = n_->createTimer(ros::Duration(1.0 / tf_freq_), &AudibotInterfacePlugin::tfTimerCallback, this);
+
+  if (pub_tf_) {
+    tf_timer_ = n_->createTimer(ros::Duration(1.0 / tf_freq_), &AudibotInterfacePlugin::tfTimerCallback, this);
+  }
 }
 
 void AudibotInterfacePlugin::OnUpdate(const common::UpdateInfo& info) {
@@ -138,7 +141,6 @@ void AudibotInterfacePlugin::steeringUpdate(const common::UpdateInfo& info) {
 
   steer_fl_joint_->SetParam("vel", 0, 100.0 * (left_steer - steer_fl_joint_->Position(0)));
   steer_fr_joint_->SetParam("vel", 0, 100.0 * (right_steer - steer_fr_joint_->Position(0)));
-
 }
 
 void AudibotInterfacePlugin::dragUpdate() {
