@@ -41,5 +41,6 @@ install(
 install(
   DIRECTORY
     launch
+    rviz
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

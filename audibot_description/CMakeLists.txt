@@ -5,7 +5,7 @@ find_package(catkin REQUIRED)
 
 catkin_package()
 
-# Extract *.tar.gz files in the mesh folder
+# Extract *.tar.xz files in the mesh folder
 FILE(GLOB files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/meshes" "${CMAKE_CURRENT_SOURCE_DIR}/meshes/*.tar.xz")
 FOREACH(filename ${files})
   MESSAGE(STATUS "Extracting file: ${filename}")
@@ -21,5 +21,5 @@ install(
     meshes
     urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  PATTERN *.tar.gz EXCLUDE
+  PATTERN *.tar.xz EXCLUDE
 )
