@@ -84,11 +84,17 @@ void AudibotInterfacePlugin::OnUpdate(const common::UpdateInfo& info) {
 }
 
 void AudibotInterfacePlugin::twistStateUpdate() {
+#if GAZEBO_MAJOR_VERSION >= 9
   world_pose_ = footprint_link_->WorldPose();
-
   twist_.linear.x = footprint_link_->RelativeLinearVel().X();
   twist_.angular.z = footprint_link_->RelativeAngularVel().Z();
   rollover_ = (fabs(world_pose_.Rot().X()) > 0.2 || fabs(world_pose_.Rot().Y()) > 0.2);
+#else
+  world_pose_ = footprint_link_->GetWorldPose();
+  twist_.linear.x = footprint_link_->GetRelativeLinearVel().x;
+  twist_.angular.z = footprint_link_->GetRelativeAngularVel().z;
+  rollover_ = (fabs(world_pose_.rot.x) > 0.2 || fabs(world_pose_.rot.y) > 0.2);
+#endif
 }
 
 void AudibotInterfacePlugin::driveUpdate() {
@@ -139,8 +145,13 @@ void AudibotInterfacePlugin::steeringUpdate(const common::UpdateInfo& info) {
   double left_steer = atan(AUDIBOT_WHEELBASE * t_alph / (AUDIBOT_WHEELBASE - 0.5 * AUDIBOT_TRACK_WIDTH * t_alph));
   double right_steer = atan(AUDIBOT_WHEELBASE * t_alph / (AUDIBOT_WHEELBASE + 0.5 * AUDIBOT_TRACK_WIDTH * t_alph));
 
+#if GAZEBO_MAJOR_VERSION >= 9
   steer_fl_joint_->SetParam("vel", 0, 100.0 * (left_steer - steer_fl_joint_->Position(0)));
   steer_fr_joint_->SetParam("vel", 0, 100.0 * (right_steer - steer_fr_joint_->Position(0)));
+#else
+  steer_fl_joint_->SetParam("vel", 0, 100.0 * (left_steer - steer_fl_joint_->GetAngle(0).Radian()));
+  steer_fr_joint_->SetParam("vel", 0, 100.0 * (right_steer - steer_fr_joint_->GetAngle(0).Radian()));
+#endif
 }
 
 void AudibotInterfacePlugin::dragUpdate() {
@@ -224,8 +235,13 @@ void AudibotInterfacePlugin::tfTimerCallback(const ros::TimerEvent& event) {
   t.frame_id_ = "world";
   t.child_frame_id_ = tf::resolve(robot_name_, footprint_link_->GetName());
   t.stamp_ = event.current_real;
+#if GAZEBO_MAJOR_VERSION >= 9
   t.setOrigin(tf::Vector3(world_pose_.Pos().X(), world_pose_.Pos().Y(), world_pose_.Pos().Z()));
   t.setRotation(tf::Quaternion(world_pose_.Rot().X(), world_pose_.Rot().Y(), world_pose_.Rot().Z(), world_pose_.Rot().W()));
+#else
+  t.setOrigin(tf::Vector3(world_pose_.pos.x, world_pose_.pos.y, world_pose_.pos.z));
+  t.setRotation(tf::Quaternion(world_pose_.rot.x, world_pose_.rot.y, world_pose_.rot.z, world_pose_.rot.w));
+#endif
   br_.sendTransform(t);
 }
 

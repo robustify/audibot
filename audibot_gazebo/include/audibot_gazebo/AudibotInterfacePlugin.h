@@ -64,7 +64,11 @@ private:
   physics::ModelPtr model_;
   geometry_msgs::Twist twist_;
   bool rollover_;
+#if GAZEBO_MAJOR_VERSION >= 9
   ignition::math::Pose3d world_pose_;
+#else
+  gazebo::math::Pose world_pose_;
+#endif
   event::ConnectionPtr update_connection_;
   physics::JointPtr steer_fl_joint_;
   physics::JointPtr steer_fr_joint_;
