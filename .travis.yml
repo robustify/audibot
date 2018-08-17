@@ -1,0 +1,14 @@
+sudo: required 
+dist: trusty 
+language: generic 
+env:
+  global:
+    - ROS_PARALLEL_TEST_JOBS=-j1
+  matrix:
+    - ROS_DISTRO="kinetic" ROS_REPO=ros
+    - ROS_DISTRO="melodic" ROS_REPO=ros
+install:
+  - git clone --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci  
+script: 
+  - .industrial_ci/ci.sh
+
