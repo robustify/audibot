@@ -12,4 +12,7 @@
   <depend>gazebo_ros</depend>
   <depend>roscpp</depend>
   <depend>tf</depend>
+
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz</exec_depend>
 </package>
