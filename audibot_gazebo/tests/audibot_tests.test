@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" >
+    <arg name="gui" value="false" />
+  </include>
+
+  <test pkg="audibot_gazebo" type="audibot_tests.py" test-name="audibot_tests" time-limit="3600.0" />
+
+</launch>
