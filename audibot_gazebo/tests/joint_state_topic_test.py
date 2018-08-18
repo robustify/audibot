@@ -21,7 +21,7 @@ class JointStateTopicTest(unittest.TestCase):
     def jointStateTopicTest(self):
 
         # Wait for a JointState message sample on the appropriate topic
-        timeout_t = rospy.Time.now() + rospy.Duration(1)
+        timeout_t = rospy.Time.now() + rospy.Duration(5)
         while not rospy.is_shutdown() and (timeout_t - rospy.Time.now()).to_sec() > 0:
             if self.joint_states.header.stamp != rospy.Time(0):
                 break
