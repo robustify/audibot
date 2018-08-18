@@ -82,7 +82,7 @@ class SpawnModelTest(unittest.TestCase):
         pose.orientation.w = 1
 
         try:
-            self.spawn_srv.wait_for_service(10.0)
+            self.spawn_srv.wait_for_service(30.0)
             resp = self.spawn_srv(model_name=self.model_name,
                                   model_xml=model_xml,
                                   robot_namespace=self.robot_name,
