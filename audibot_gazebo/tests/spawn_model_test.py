@@ -3,7 +3,7 @@ import unittest
 import rospy
 import rospkg
 import tf
-from tf import LookupException, ExtrapolationException, TransformListener, Transformer
+from tf import LookupException, ExtrapolationException, TransformListener
 import os
 import sys
 import shlex
@@ -43,9 +43,6 @@ class SpawnModelTest(unittest.TestCase):
                 pass
             except rospy.ROSException:  # timeout expired
                 pass
-
-        xxx = Transformer()
-        xxx.clear()
 
     def runTest(self):
         results = self.__callSpawnService(self.model_xml)
