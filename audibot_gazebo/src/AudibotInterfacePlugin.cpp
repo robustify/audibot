@@ -19,7 +19,6 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
   wheel_fl_joint_ = model->GetJoint("wheel_fl");
   wheel_fr_joint_ = model->GetJoint("wheel_fr");
   footprint_link_ = model->GetLink("base_footprint");
-  model_ = model;
 
   // Load SDF parameters
   if (sdf->HasElement("pubTf")) {
@@ -224,7 +223,7 @@ void AudibotInterfacePlugin::recvThrottleCmd(const std_msgs::Float64ConstPtr& ms
 
 void AudibotInterfacePlugin::twistTimerCallback(const ros::TimerEvent& event) {
   geometry_msgs::TwistStamped twist_msg;
-  twist_msg.header.frame_id = model_->GetName() + "/base_footprint";
+  twist_msg.header.frame_id = tf::resolve(robot_name_, footprint_link_->GetName());
   twist_msg.header.stamp = event.current_real;
   twist_msg.twist = twist_;
   pub_twist_.publish(twist_msg);

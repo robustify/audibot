@@ -61,7 +61,6 @@ private:
   ros::Timer tf_timer_;
 
   tf::TransformBroadcaster br_;
-  physics::ModelPtr model_;
   geometry_msgs::Twist twist_;
   bool rollover_;
 #if GAZEBO_MAJOR_VERSION >= 9
