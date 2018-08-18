@@ -4,6 +4,8 @@ import rospy
 import rostest
 
 from spawn_model_test import SpawnModelTest
+from joint_state_topic_test import JointStateTopicTest
+from twist_topic_test import TwistTopicTest
 
 
 class AudibotTests(unittest.TestSuite):
@@ -12,10 +14,15 @@ class AudibotTests(unittest.TestSuite):
         super(AudibotTests, self).__init__()
 
         tests = [
-            SpawnModelTest(False, False, 'test_model', 'No TF with prefix'),
-            SpawnModelTest(False, False, '', 'No TF without prefix'),
-            SpawnModelTest(True, False, 'test_model', 'TF with prefix'),
-            SpawnModelTest(True, False, '', 'TF without prefix')
+            SpawnModelTest(False, True, '', 'No TF without prefix'),
+            TwistTopicTest('', True),
+
+            SpawnModelTest(False, True, 'test_model', 'No TF with prefix'),
+            JointStateTopicTest('test_model'),
+            TwistTopicTest('test_model', True),
+
+            SpawnModelTest(True, False, '', 'TF without prefix'),
+            SpawnModelTest(True, True, 'test_model', 'TF with prefix'),
         ]
         self.addTests(tests)
 

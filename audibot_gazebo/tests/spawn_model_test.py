@@ -2,7 +2,6 @@
 import unittest
 import rospy
 import rospkg
-import tf
 from tf import LookupException, ExtrapolationException, TransformListener
 import os
 import sys
@@ -15,7 +14,7 @@ from cStringIO import StringIO
 
 class SpawnModelTest(unittest.TestCase):
     def __init__(self, pub_tf, leave_spawned, robot_name, test_name):
-        super(SpawnModelTest, self).__init__()
+        super(SpawnModelTest, self).__init__('spawnModelTest')
         self.test_name = '[' + test_name + '] '
         self.robot_name = robot_name
         if len(robot_name) == 0:
@@ -44,33 +43,29 @@ class SpawnModelTest(unittest.TestCase):
             except rospy.ROSException:  # timeout expired
                 pass
 
-    def runTest(self):
+    def spawnModelTest(self):
         results = self.__callSpawnService(self.model_xml)
         self.assertTrue(results[0], self.test_name + results[1])
 
         if self.pub_tf:
-            self.assertTrue(self.__robustTfLookup(self.robot_name + '/base_footprint', 'world'),
+            self.assertTrue(self.__tfLookupWithTimeout(self.robot_name + '/base_footprint', 'world'),
                             msg=self.test_name + 'TF lookup failed')
         else:
-            self.assertFalse(self.__robustTfLookup(self.robot_name + '/base_footprint', 'world'),
+            self.assertFalse(self.__tfLookupWithTimeout(self.robot_name + '/base_footprint', 'world'),
                              msg=self.test_name + 'lookupTransform did not fail')
 
-    def __robustTfLookup(self, child_frame, parent_frame):
+    def __tfLookupWithTimeout(self, child_frame, parent_frame):
         success = False
-        num_tries = 0
-
-        while num_tries < 50:
+        timeout_t = rospy.Time.now() + rospy.Duration(5)
+        while not rospy.is_shutdown() and (timeout_t - rospy.Time.now()).to_sec() > 0:
             try:
                 self.tf_listener.lookupTransform(child_frame, parent_frame, rospy.Time(0))
                 success = True
                 break
             except LookupException:
                 pass
-            except ExtrapolationException:
-                pass
 
-            num_tries += 1
-            rospy.sleep(0.1)
+            rospy.sleep(0.01)
         return success
 
     def __callSpawnService(self, model_xml):
