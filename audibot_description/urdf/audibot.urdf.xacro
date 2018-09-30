@@ -7,7 +7,7 @@
 
   <xacro:property name="wheel_radius" value="0.36" />
   <xacro:property name="wheel_thickness" value="0.25" />
-  <xacro:property name="wheel_mass" value="20.0" />
+  <xacro:property name="wheel_mass" value="40.0" />
 
   <xacro:property name="body_mass" value="1620.0" />
   <xacro:property name="body_width" value="${2*half_rear_track_width}" />
@@ -178,7 +178,7 @@
   <xacro:front_wheel name="fl" x="${half_wheelbase}" y="${half_front_track_width}" z="0" flip="1" />
   <xacro:front_wheel name="fr" x="${half_wheelbase}" y="${-half_front_track_width}" z="0" flip="0" />
 
-  <xacro:property name="wheel_friction" value="1.5" />
+  <xacro:property name="wheel_friction" value="1.75" />
 
   <gazebo reference="base_link" >
     <mu1>0.5</mu1>
