@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>audibot</name>
+  <version>0.0.0</version>
+  <description>
+    Metapackage for audibot
+  </description>
+  <maintainer email="mradov@gmail.com">Micho Radovnikovich</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>audibot_gazebo</exec_depend>
+  <exec_depend>audibot_description</exec_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
