@@ -146,32 +146,11 @@
     </inertial>
   </link>
 
-  <link name="hood_logo" >
-    <visual>
-      <origin xyz="0.035 0 0.025" rpy="0 0 0" />
-      <geometry>
-        <mesh filename="package://audibot_description/meshes/hood_logo.dae" scale="1.01 1.01 1.01" />
-      </geometry>
-    </visual>
-  </link>
-
   <joint name="base_link" type="fixed">
     <origin xyz="${half_wheelbase} 0 ${wheel_radius}" rpy="0 0 0"/>
     <parent link="base_footprint"/>
     <child link="base_link"/>
   </joint>
-
-  <joint name="hood_logo" type="fixed" >
-    <parent link="base_link" />
-    <child link="hood_logo" />
-    <origin xyz="0 0 0" rpy="0 0 0" />
-  </joint>
-
-  <gazebo reference="hood_logo" >
-    <visual>
-      <transparency>0.01</transparency>
-    </visual>
-  </gazebo>
 
   <xacro:rear_wheel name="rl" x="${-half_wheelbase}" y="${half_rear_track_width}" z="0" flip="1" />
   <xacro:rear_wheel name="rr" x="${-half_wheelbase}" y="${-half_rear_track_width}" z="0" flip="0" />
