@@ -26,7 +26,7 @@ namespace gazebo {
 #define GRAVITY_ACCEL             9.81
 #define VEHICLE_MASS              1700.0
 #define WHEEL_RADIUS              0.36
-#define MAX_BRAKE_TORQUE          3000.0
+#define MAX_BRAKE_TORQUE          8000.0
 
 // Gear states
 enum { DRIVE = 0, REVERSE = 1 };
