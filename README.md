@@ -13,8 +13,11 @@ To control the vehicle, publish the following topics:
 - **steering_cmd** - `std_msgs/Float64` topic containing the desired steering wheel angle in radians
 - **brake_cmd** - `std_msgs/Float64` topic containing the desired brake torque in Newton-meters (Nm)
 - **throttle_cmd** - `std_msgs/Float64` topic containing the desired throttle percentage (range 0 to 1)
+- **gear_cmd** - `std_msgs/UInt8` topic containing the desired gear (`DRIVE` = 0, `REVERSE` = 1)
 
 Ground truth speed and yaw rate feedback are provided on the **twist** topic, which is of type `geometry_msgs/TwistStamped`
+
+Current gear state is provided on the **gear_state** topic, which is of type `std_msgs/UInt8`. The gear state starts in `DRIVE` by default.
 
 Some useful kinematics parameters:
 
