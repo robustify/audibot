@@ -6,6 +6,7 @@ AudibotInterfacePlugin::AudibotInterfacePlugin() {
   target_angle_ = 0.0;
   brake_cmd_ = 0.0;
   throttle_cmd_ = 0.0;
+  gear_cmd_ = DRIVE;
   current_steering_angle_ = 0.0;
   rollover_ = false;
 }
@@ -61,9 +62,11 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
   sub_steering_cmd_ = n_->subscribe("steering_cmd", 1, &AudibotInterfacePlugin::recvSteeringCmd, this);
   sub_brake_cmd_ = n_->subscribe("brake_cmd", 1, &AudibotInterfacePlugin::recvBrakeCmd, this);
   sub_throttle_cmd_ = n_->subscribe("throttle_cmd", 1, &AudibotInterfacePlugin::recvThrottleCmd, this);
+  sub_gear_cmd_ = n_->subscribe("gear_cmd", 1, &AudibotInterfacePlugin::recvGearCmd, this);
 
   pub_twist_ = n_->advertise<geometry_msgs::TwistStamped> ("twist", 1);
-  twist_timer_ = n_->createTimer(ros::Duration(0.02), &AudibotInterfacePlugin::twistTimerCallback, this);
+  pub_gear_state_ = n_->advertise<std_msgs::UInt8> ("gear_state", 1);
+  feedback_timer_ = n_->createTimer(ros::Duration(0.02), &AudibotInterfacePlugin::feedbackTimerCallback, this);
 
   if (pub_tf_) {
     tf_timer_ = n_->createTimer(ros::Duration(1.0 / tf_freq_), &AudibotInterfacePlugin::tfTimerCallback, this);
@@ -116,11 +119,19 @@ void AudibotInterfacePlugin::driveUpdate() {
     setAllWheelTorque(-brake_torque_factor * brake_cmd_);
   } else {
     if ((current_stamp - throttle_stamp_).toSec() < 0.25) {
-      double max_throttle_torque = throttle_cmd_ * 4000.0 - 40.1 * twist_.linear.x;
-      if (max_throttle_torque < 0.0) {
-        max_throttle_torque = 0.0;
+      double throttle_torque;
+      if (gear_cmd_ == DRIVE) {
+        throttle_torque = throttle_cmd_ * 4000.0 - 40.1 * twist_.linear.x;
+        if (throttle_torque < 0.0) {
+          throttle_torque = 0.0;
+        }
+      } else { // REVERSE
+        throttle_torque = -throttle_cmd_ * 4000.0 - 250.0 * twist_.linear.x;
+        if (throttle_torque > 0.0) {
+          throttle_torque = 0.0;
+        }
       }
-      setRearWheelTorque(max_throttle_torque);
+      setRearWheelTorque(throttle_torque);
     }
   }
 }
@@ -221,12 +232,24 @@ void AudibotInterfacePlugin::recvThrottleCmd(const std_msgs::Float64ConstPtr& ms
   throttle_stamp_ = ros::Time::now();
 }
 
-void AudibotInterfacePlugin::twistTimerCallback(const ros::TimerEvent& event) {
+void AudibotInterfacePlugin::recvGearCmd(const std_msgs::UInt8ConstPtr& msg) {
+  if (msg->data > REVERSE) {
+    ROS_WARN("Invalid gear command received [%u]", msg->data);
+  } else {
+    gear_cmd_ = msg->data;
+  }
+}
+
+void AudibotInterfacePlugin::feedbackTimerCallback(const ros::TimerEvent& event) {
   geometry_msgs::TwistStamped twist_msg;
   twist_msg.header.frame_id = tf::resolve(robot_name_, footprint_link_->GetName());
   twist_msg.header.stamp = event.current_real;
   twist_msg.twist = twist_;
   pub_twist_.publish(twist_msg);
+
+  std_msgs::UInt8 gear_state_msg;
+  gear_state_msg.data = gear_cmd_;
+  pub_gear_state_.publish(gear_state_msg);
 }
 
 void AudibotInterfacePlugin::tfTimerCallback(const ros::TimerEvent& event) {

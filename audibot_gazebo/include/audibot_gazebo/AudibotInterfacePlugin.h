@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/UInt8.h>
 #include <geometry_msgs/TwistStamped.h>
 
 #include <gazebo/common/Plugin.hh>
@@ -27,6 +28,9 @@ namespace gazebo {
 #define WHEEL_RADIUS              0.36
 #define MAX_BRAKE_TORQUE          3000.0
 
+// Gear states
+enum { DRIVE = 0, REVERSE = 1 };
+
 class AudibotInterfacePlugin : public ModelPlugin {
 public:
   AudibotInterfacePlugin();
@@ -37,12 +41,13 @@ protected:
   virtual void Reset();
 
 private:
-  void twistTimerCallback(const ros::TimerEvent& event);
+  void feedbackTimerCallback(const ros::TimerEvent& event);
   void tfTimerCallback(const ros::TimerEvent& event);
   void OnUpdate(const common::UpdateInfo& info);
   void recvSteeringCmd(const std_msgs::Float64ConstPtr& msg);
   void recvThrottleCmd(const std_msgs::Float64ConstPtr& msg);
   void recvBrakeCmd(const std_msgs::Float64ConstPtr& msg);
+  void recvGearCmd(const std_msgs::UInt8ConstPtr& msg);
   void twistStateUpdate();
   void driveUpdate();
   void steeringUpdate(const common::UpdateInfo& info);
@@ -53,11 +58,13 @@ private:
 
   ros::NodeHandle* n_;
   ros::Publisher pub_twist_;
+  ros::Publisher pub_gear_state_;
   ros::Subscriber sub_steering_cmd_;
   ros::Subscriber sub_throttle_cmd_;
   ros::Subscriber sub_brake_cmd_;
+  ros::Subscriber sub_gear_cmd_;
   ros::Subscriber sub_model_states_;
-  ros::Timer twist_timer_;
+  ros::Timer feedback_timer_;
   ros::Timer tf_timer_;
 
   tf::TransformBroadcaster br_;
@@ -96,6 +103,9 @@ private:
   // Throttle
   double throttle_cmd_;
   ros::Time throttle_stamp_;
+
+  // Gear
+  uint8_t gear_cmd_;
 };
 
 GZ_REGISTER_MODEL_PLUGIN(AudibotInterfacePlugin)
