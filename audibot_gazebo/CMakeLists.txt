@@ -4,7 +4,7 @@ project(audibot_gazebo)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   gazebo_ros
-  tf
+  tf2_ros
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")

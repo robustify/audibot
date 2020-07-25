@@ -8,8 +8,8 @@
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/physics/physics.hh>
-#include <tf/tf.h>
-#include <tf/transform_broadcaster.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 namespace gazebo {
 
@@ -67,7 +67,7 @@ private:
   ros::Timer feedback_timer_;
   ros::Timer tf_timer_;
 
-  tf::TransformBroadcaster br_;
+  tf2_ros::TransformBroadcaster br_;
   geometry_msgs::Twist twist_;
   bool rollover_;
 #if GAZEBO_MAJOR_VERSION >= 9
@@ -84,6 +84,7 @@ private:
   physics::JointPtr wheel_fr_joint_;
   physics::LinkPtr footprint_link_;
   common::Time last_update_time_;
+  std::string frame_id_;
 
   // SDF parameters
   std::string robot_name_;

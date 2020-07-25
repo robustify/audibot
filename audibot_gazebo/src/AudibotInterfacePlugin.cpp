@@ -65,6 +65,12 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
   if (pub_tf_) {
     tf_timer_ = n_->createTimer(ros::Duration(1.0 / tf_freq_), &AudibotInterfacePlugin::tfTimerCallback, this);
   }
+
+  if (robot_name_.empty()) {
+    frame_id_ = footprint_link_->GetName();
+  } else {
+    frame_id_ = robot_name_ + "/" + footprint_link_->GetName();
+  }
 }
 
 void AudibotInterfacePlugin::OnUpdate(const common::UpdateInfo& info) {
@@ -236,7 +242,7 @@ void AudibotInterfacePlugin::recvGearCmd(const std_msgs::UInt8ConstPtr& msg) {
 
 void AudibotInterfacePlugin::feedbackTimerCallback(const ros::TimerEvent& event) {
   geometry_msgs::TwistStamped twist_msg;
-  twist_msg.header.frame_id = tf::resolve(robot_name_, footprint_link_->GetName());
+  twist_msg.header.frame_id = frame_id_;
   twist_msg.header.stamp = event.current_real;
   twist_msg.twist = twist_;
   pub_twist_.publish(twist_msg);
@@ -253,16 +259,26 @@ void AudibotInterfacePlugin::tfTimerCallback(const ros::TimerEvent& event) {
     return;
   }
   
-  tf::StampedTransform t;
-  t.frame_id_ = "world";
-  t.child_frame_id_ = tf::resolve(robot_name_, footprint_link_->GetName());
-  t.stamp_ = event.current_real;
+  geometry_msgs::TransformStamped t;
+  t.header.frame_id = "world";
+  t.child_frame_id = frame_id_;
+  t.header.stamp = event.current_real;
 #if GAZEBO_MAJOR_VERSION >= 9
-  t.setOrigin(tf::Vector3(world_pose_.Pos().X(), world_pose_.Pos().Y(), world_pose_.Pos().Z()));
-  t.setRotation(tf::Quaternion(world_pose_.Rot().X(), world_pose_.Rot().Y(), world_pose_.Rot().Z(), world_pose_.Rot().W()));
+  t.transform.translation.x = world_pose_.Pos().X();
+  t.transform.translation.y = world_pose_.Pos().Y();
+  t.transform.translation.z = world_pose_.Pos().Z();
+  t.transform.rotation.w = world_pose_.Rot().W();
+  t.transform.rotation.x = world_pose_.Rot().X();
+  t.transform.rotation.y = world_pose_.Rot().Y();
+  t.transform.rotation.z = world_pose_.Rot().Z();
 #else
-  t.setOrigin(tf::Vector3(world_pose_.pos.x, world_pose_.pos.y, world_pose_.pos.z));
-  t.setRotation(tf::Quaternion(world_pose_.rot.x, world_pose_.rot.y, world_pose_.rot.z, world_pose_.rot.w));
+  t.transform.translation.x = world_pose_.pos.x;
+  t.transform.translation.y = world_pose_.pos.y;
+  t.transform.translation.z = world_pose_.pos.z;
+  t.transform.rotation.w = world_pose_.rot.w;
+  t.transform.rotation.x = world_pose_.rot.x;
+  t.transform.rotation.y = world_pose_.rot.y;
+  t.transform.rotation.z = world_pose_.rot.z;
 #endif
   br_.sendTransform(t);
 }

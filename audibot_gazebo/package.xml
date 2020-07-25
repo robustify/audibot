@@ -11,7 +11,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>gazebo_ros</depend>
   <depend>roscpp</depend>
-  <depend>tf</depend>
+  <depend>tf2_ros</depend>
 
   <test_depend>rospy</test_depend>
   <test_depend>rostest</test_depend>
