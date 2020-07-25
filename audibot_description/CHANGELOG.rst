@@ -2,8 +2,8 @@
 Changelog for package audibot_description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2020-07-25)
+------------------
 * Implements tf_prefix functionality that was removed from robot_state_publisher
 * Changes names of joints to be different from links
 * Contributors: Micho Radovnikovich

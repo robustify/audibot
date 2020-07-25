@@ -2,8 +2,8 @@
 Changelog for package audibot_gazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.0 (2020-07-25)
+------------------
 * Implements tf_prefix functionality that was removed from robot_state_publisher
 * Migrates from tf to tf2
 * Prevents publishing TF frame transforms with the same timestamp
