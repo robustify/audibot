@@ -247,6 +247,12 @@ void AudibotInterfacePlugin::feedbackTimerCallback(const ros::TimerEvent& event)
 }
 
 void AudibotInterfacePlugin::tfTimerCallback(const ros::TimerEvent& event) {
+  // Don't publish TF if the same timestamp as last time
+  // to prevent TF_REPEATED_DATA warning
+  if ((event.current_real - event.last_real).toSec() < 1e-6) {
+    return;
+  }
+  
   tf::StampedTransform t;
   t.frame_id_ = "world";
   t.child_frame_id_ = tf::resolve(robot_name_, footprint_link_->GetName());
