@@ -2,6 +2,12 @@
 Changelog for package audibot_description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Implements tf_prefix functionality that was removed from robot_state_publisher
+* Changes names of joints to be different from links
+* Contributors: Micho Radovnikovich
+
 0.1.1 (2020-07-25)
 ------------------
 * Removes logo texture from the hood
