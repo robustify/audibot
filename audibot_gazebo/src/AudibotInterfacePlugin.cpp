@@ -39,12 +39,6 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
     robot_name_ = std::string("");
   }
 
-  if (sdf->HasElement("pubTf")) {
-    sdf->GetElement("pubTf")->GetValue()->Get(pub_tf_);
-  } else {
-    pub_tf_ = false;
-  }
-
   if (sdf->HasElement("tfFreq")) {
     sdf->GetElement("tfFreq")->GetValue()->Get(tf_freq_);
   } else {
