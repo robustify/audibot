@@ -2,8 +2,8 @@
 Changelog for package audibot_description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2020-07-25)
+------------------
 * Removes logo texture from the hood
 * Contributors: Micho Radovnikovich
 

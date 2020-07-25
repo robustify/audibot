@@ -2,8 +2,8 @@
 Changelog for package audibot_gazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2020-07-25)
+------------------
 * Increases max braking torque to 8000 Nm
 * Adds simulation of Drive and Reverse gears
 * Contributors: Micho Radovnikovich
