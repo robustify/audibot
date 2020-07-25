@@ -13,12 +13,12 @@ AudibotInterfacePlugin::AudibotInterfacePlugin() {
 
 void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) {
   // Gazebo initialization
-  steer_fl_joint_ = model->GetJoint("steer_fl");
-  steer_fr_joint_ = model->GetJoint("steer_fr");
-  wheel_rl_joint_ = model->GetJoint("wheel_rl");
-  wheel_rr_joint_ = model->GetJoint("wheel_rr");
-  wheel_fl_joint_ = model->GetJoint("wheel_fl");
-  wheel_fr_joint_ = model->GetJoint("wheel_fr");
+  steer_fl_joint_ = model->GetJoint("steer_fl_joint");
+  steer_fr_joint_ = model->GetJoint("steer_fr_joint");
+  wheel_rl_joint_ = model->GetJoint("wheel_rl_joint");
+  wheel_rr_joint_ = model->GetJoint("wheel_rr_joint");
+  wheel_fl_joint_ = model->GetJoint("wheel_fl_joint");
+  wheel_fr_joint_ = model->GetJoint("wheel_fr_joint");
   footprint_link_ = model->GetLink("base_footprint");
 
   // Load SDF parameters
