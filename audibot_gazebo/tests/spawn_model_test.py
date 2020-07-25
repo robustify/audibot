@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 import unittest
 import rospy
 import rospkg
@@ -9,7 +9,7 @@ import shlex
 import xacro
 from gazebo_msgs.srv import SpawnModel, DeleteModel
 from geometry_msgs.msg import Pose
-from cStringIO import StringIO
+import io
 
 
 class SpawnModelTest(unittest.TestCase):
@@ -118,7 +118,7 @@ class SpawnModelTest(unittest.TestCase):
 
         # Redirect stdout from xacro to a StringIO object
         old_std_out = sys.stdout
-        sys.stdout = xml_output = StringIO()
+        sys.stdout = xml_output = io.StringIO()
         xacro.main()
         sys.stdout = old_std_out
         return xml_output.getvalue()

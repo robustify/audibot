@@ -19,4 +19,5 @@
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>gazebo_ros_pkgs</exec_depend>
   <exec_depend>rviz</exec_depend>
+  <exec_depend>audibot_description</exec_depend>
 </package>
