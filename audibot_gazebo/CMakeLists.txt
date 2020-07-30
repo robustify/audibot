@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   gazebo_ros
   tf2_ros
+  tf2_geometry_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
@@ -25,6 +26,9 @@ include_directories(
 
 add_library(audibot_interface_plugin
   src/AudibotInterfacePlugin.cpp
+)
+add_dependencies(audibot_interface_plugin
+  ${catkin_EXPORTED_TARGETS}
 )
 target_link_libraries(audibot_interface_plugin
   ${catkin_LIBRARIES}
