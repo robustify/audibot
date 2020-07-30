@@ -2,6 +2,12 @@
 Changelog for package audibot_gazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Bump minimum CMake version to 3.0.2 as recommended for ROS Noetic
+* Adds dependency on tf2_geometry_msgs
+* Contributors: Micho Radovnikovich
+
 0.2.0 (2020-07-25)
 ------------------
 * Implements tf_prefix functionality that was removed from robot_state_publisher
