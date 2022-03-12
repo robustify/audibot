@@ -61,7 +61,7 @@
       <child link="wheel_${name}" />
       <origin xyz="${x} ${y} ${z}" rpy="-1.57079632679 0 0" />
       <axis xyz="0 0 1" />
-      <limit effort="1000.0" velocity="22.0" />
+      <limit effort="-1.0" velocity="-1.0" />
     </joint>
   </xacro:macro>
 
@@ -100,7 +100,7 @@
       <child link="steer_${name}" />
       <origin xyz="${x} ${y} ${z}" rpy="0 0 0" />
       <axis xyz="0 0 1" />
-      <limit upper="0.6" lower="-0.6" effort="0.0" velocity="0.0" />
+      <limit upper="0.6" lower="-0.6" effort="-1.0" velocity="-1.0" />
     </joint>
 
     <joint name="wheel_${name}_joint" type="continuous" >
@@ -108,7 +108,7 @@
       <child link="wheel_${name}" />
       <origin xyz="0 0 0" rpy="-1.57079632679 0 0" />
       <axis xyz="0 0 1" />
-      <limit effort="1000.0" velocity="22.0" />
+      <limit effort="-1.0" velocity="-1.0" />
     </joint>
   </xacro:macro>
 
