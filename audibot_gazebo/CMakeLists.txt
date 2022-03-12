@@ -1,10 +1,11 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(audibot_gazebo)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   gazebo_ros
-  tf
+  tf2_ros
+  tf2_geometry_msgs
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
@@ -26,6 +27,9 @@ include_directories(
 add_library(audibot_interface_plugin
   src/AudibotInterfacePlugin.cpp
 )
+add_dependencies(audibot_interface_plugin
+  ${catkin_EXPORTED_TARGETS}
+)
 target_link_libraries(audibot_interface_plugin
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
@@ -42,6 +46,12 @@ install(
   DIRECTORY
     launch
     rviz
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(
+  PROGRAMS
+    scripts/tf_prefixer.py
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 

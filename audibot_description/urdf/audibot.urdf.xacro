@@ -17,8 +17,6 @@
   <xacro:arg name="pub_tf" default="true" />
   <xacro:arg name="robot_name" default="" />
 
-  <xacro:property name="robot_name_prop" value="$(arg robot_name)" />
-
   <gazebo>
     <!-- Simulated vehicle interface -->
     <plugin name="audibot_interface_plugin" filename="libaudibot_interface_plugin.so" >
@@ -29,14 +27,10 @@
 
     <!-- Publish current joint angles -->
     <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
-        <xacro:if value="${robot_name_prop != ''}" >
-          <robotNamespace>$(arg robot_name)</robotNamespace>
-        </xacro:if>
         <jointName>
-            steer_fl, steer_fr, wheel_fl, wheel_fr, wheel_rl, wheel_rr
+            steer_fl_joint, steer_fr_joint, wheel_fl_joint, wheel_fr_joint, wheel_rl_joint, wheel_rr_joint
         </jointName>
         <updateRate>100</updateRate>
-        <alwaysOn>true</alwaysOn>
     </plugin>
   </gazebo>
 
@@ -62,12 +56,12 @@
       </inertial>
 
     </link>
-    <joint name="wheel_${name}" type="continuous" >
+    <joint name="wheel_${name}_joint" type="continuous" >
       <parent link="base_link" />
       <child link="wheel_${name}" />
       <origin xyz="${x} ${y} ${z}" rpy="-1.57079632679 0 0" />
       <axis xyz="0 0 1" />
-      <limit effort="1000.0" velocity="22.0" />
+      <limit effort="-1.0" velocity="-1.0" />
     </joint>
   </xacro:macro>
 
@@ -101,20 +95,20 @@
       </inertial>
     </link>
 
-    <joint name="steer_${name}" type="revolute" >
+    <joint name="steer_${name}_joint" type="revolute" >
       <parent link="base_link" />
       <child link="steer_${name}" />
       <origin xyz="${x} ${y} ${z}" rpy="0 0 0" />
       <axis xyz="0 0 1" />
-      <limit upper="0.6" lower="-0.6" effort="0.0" velocity="0.0" />
+      <limit upper="0.6" lower="-0.6" effort="-1.0" velocity="-1.0" />
     </joint>
 
-    <joint name="wheel_${name}" type="continuous" >
+    <joint name="wheel_${name}_joint" type="continuous" >
       <parent link="steer_${name}" />
       <child link="wheel_${name}" />
       <origin xyz="0 0 0" rpy="-1.57079632679 0 0" />
       <axis xyz="0 0 1" />
-      <limit effort="1000.0" velocity="22.0" />
+      <limit effort="-1.0" velocity="-1.0" />
     </joint>
   </xacro:macro>
 
@@ -146,7 +140,7 @@
     </inertial>
   </link>
 
-  <joint name="base_link" type="fixed">
+  <joint name="base_link_joint" type="fixed">
     <origin xyz="${half_wheelbase} 0 ${wheel_radius}" rpy="0 0 0"/>
     <parent link="base_footprint"/>
     <child link="base_link"/>

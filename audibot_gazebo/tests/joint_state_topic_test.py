@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 import unittest
 import rospy
 import collections
@@ -31,7 +31,7 @@ class JointStateTopicTest(unittest.TestCase):
                         msg='Joint states topic [%s] not received' % self.joint_state_topic)
 
         # Make sure the joint names are correct
-        correct_joints = ['steer_fl', 'steer_fr', 'wheel_fl', 'wheel_fr', 'wheel_rl', 'wheel_rr']
+        correct_joints = ['steer_fl_joint', 'steer_fr_joint', 'wheel_fl_joint', 'wheel_fr_joint', 'wheel_rl_joint', 'wheel_rr_joint']
         self.assertTrue(collections.Counter(self.joint_states.name) == collections.Counter(correct_joints),
                         msg='Joint names %s incorrect, should be %s' % (str(self.joint_states.name), str(correct_joints))
                         )
