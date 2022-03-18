@@ -16,11 +16,6 @@
     <node pkg="robot_state_publisher" type="robot_state_publisher" name="state_publisher">
       <param name="publish_frequency" type="double" value="$(arg tf_freq)" />
       <param name="tf_prefix" value="$(arg robot_name)" />
-      <remap from="/tf" to="tf" />
-      <remap from="/tf_static" to="tf_static" />
-    </node>
-    <node pkg="audibot_gazebo" type="tf_prefixer.py" name="tf_prefixer" >
-      <param name="tf_prefix" value="$(arg robot_name)" />
     </node>
   </group>
 

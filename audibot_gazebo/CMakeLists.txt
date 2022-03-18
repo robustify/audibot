@@ -49,12 +49,6 @@ install(
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-install(
-  PROGRAMS
-    scripts/tf_prefixer.py
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
-
 if (CATKIN_ENABLE_TESTING)
   add_subdirectory(tests)
 endif()
