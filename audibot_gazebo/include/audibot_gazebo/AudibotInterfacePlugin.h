@@ -5,6 +5,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/UInt8.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <nav_msgs/Odometry.h>
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/physics/physics.hh>
@@ -58,7 +59,9 @@ private:
 
   ros::NodeHandle* n_;
   ros::Publisher pub_twist_;
+  ros::Publisher pub_odom_;
   ros::Publisher pub_gear_state_;
+  ros::Publisher pub_steering_;
   ros::Subscriber sub_steering_cmd_;
   ros::Subscriber sub_throttle_cmd_;
   ros::Subscriber sub_brake_cmd_;
@@ -72,8 +75,10 @@ private:
   bool rollover_;
 #if GAZEBO_MAJOR_VERSION >= 9
   ignition::math::Pose3d world_pose_;
+  ignition::math::Pose3d front_pose_;
 #else
   gazebo::math::Pose world_pose_;
+  ignition::math::Pose3d front_pose_;
 #endif
   event::ConnectionPtr update_connection_;
   physics::JointPtr steer_fl_joint_;
@@ -83,6 +88,7 @@ private:
   physics::JointPtr wheel_fl_joint_;
   physics::JointPtr wheel_fr_joint_;
   physics::LinkPtr footprint_link_;
+  physics::LinkPtr front_axle_link_;
   common::Time last_update_time_;
   std::string frame_id_;
 
