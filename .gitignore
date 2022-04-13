@@ -4,3 +4,4 @@ syntax: glob
 *.stl
 *.idea
 *.pyc
+**/.vscode
