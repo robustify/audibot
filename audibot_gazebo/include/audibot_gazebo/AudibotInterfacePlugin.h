@@ -75,10 +75,8 @@ private:
   bool rollover_;
 #if GAZEBO_MAJOR_VERSION >= 9
   ignition::math::Pose3d world_pose_;
-  ignition::math::Pose3d front_pose_;
 #else
   gazebo::math::Pose world_pose_;
-  ignition::math::Pose3d front_pose_;
 #endif
   event::ConnectionPtr update_connection_;
   physics::JointPtr steer_fl_joint_;
@@ -88,7 +86,6 @@ private:
   physics::JointPtr wheel_fl_joint_;
   physics::JointPtr wheel_fr_joint_;
   physics::LinkPtr footprint_link_;
-  physics::LinkPtr front_axle_link_;
   common::Time last_update_time_;
   std::string frame_id_;
 
