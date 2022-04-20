@@ -146,19 +146,6 @@
     <child link="base_link"/>
   </joint>
 
-  <link name="front_axle">
-    <inertial>
-      <mass value="0.1"/>
-      <inertia ixx="0.0001" ixy="0.0001" ixz="0.0001" iyy="0.0001" iyz="0.0001" izz="0.0001" />
-    </inertial>
-  </link>
-
-  <joint name="front_axle_joint" type="fixed">
-    <origin xyz="${2*half_wheelbase} 0 0" rpy="0 0 0"/>
-    <parent link="base_footprint"/>
-    <child link="front_axle"/>
-  </joint>
-
   <xacro:rear_wheel name="rl" x="${-half_wheelbase}" y="${half_rear_track_width}" z="0" flip="1" />
   <xacro:rear_wheel name="rr" x="${-half_wheelbase}" y="${-half_rear_track_width}" z="0" flip="0" />
   <xacro:front_wheel name="fl" x="${half_wheelbase}" y="${half_front_track_width}" z="0" flip="1" />
@@ -189,10 +176,5 @@
   <gazebo reference="wheel_rr" >
     <mu1>${wheel_friction}</mu1>
     <mu2>${wheel_friction}</mu2>
-  </gazebo>
-
-  <!-- prevent fixed joint reduction -->
-  <gazebo reference="front_axle_joint" >
-    <preserveFixedJoint>true</preserveFixedJoint>
   </gazebo>
 </robot>
