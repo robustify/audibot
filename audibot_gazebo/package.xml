@@ -13,6 +13,7 @@
   <depend>roscpp</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>nav_msgs</depend>
 
   <test_depend>rospy</test_depend>
   <test_depend>rostest</test_depend>
