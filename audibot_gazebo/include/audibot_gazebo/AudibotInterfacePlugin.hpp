@@ -1,14 +1,15 @@
-#ifndef AUDIBOTINTERFACEPLUGIN_H
-#define AUDIBOTINTERFACEPLUGIN_H
+#pragma once
 
-#include <ros/ros.h>
-#include <std_msgs/Float64.h>
-#include <std_msgs/UInt8.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <nav_msgs/Odometry.h>
+#include <rclcpp/rclcpp.hpp>
+#include <example_interfaces/msg/float64.hpp>
+#include <example_interfaces/msg/u_int8.hpp>
+#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 
 #include <gazebo/common/Plugin.hh>
+#include <gazebo/common/Time.hh>
 #include <gazebo/physics/physics.hh>
+#include <gazebo_ros/node.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_broadcaster.h>
 
@@ -42,42 +43,39 @@ protected:
   virtual void Reset();
 
 private:
-  void feedbackTimerCallback(const ros::TimerEvent& event);
-  void tfTimerCallback(const ros::TimerEvent& event);
+  void feedbackTimerCallback();
+  void tfTimerCallback();
   void OnUpdate(const common::UpdateInfo& info);
-  void recvSteeringCmd(const std_msgs::Float64ConstPtr& msg);
-  void recvThrottleCmd(const std_msgs::Float64ConstPtr& msg);
-  void recvBrakeCmd(const std_msgs::Float64ConstPtr& msg);
-  void recvGearCmd(const std_msgs::UInt8ConstPtr& msg);
+  void recvSteeringCmd(const example_interfaces::msg::Float64::ConstSharedPtr msg);
+  void recvThrottleCmd(const example_interfaces::msg::Float64::ConstSharedPtr msg);
+  void recvBrakeCmd(const example_interfaces::msg::Float64::ConstSharedPtr msg);
+  void recvGearCmd(const example_interfaces::msg::UInt8::ConstSharedPtr msg);
   void twistStateUpdate();
   void driveUpdate();
-  void steeringUpdate(const common::UpdateInfo& info);
+  void steeringUpdate(double time_step);
   void dragUpdate();
   void stopWheels();
   void setAllWheelTorque(double torque);
   void setRearWheelTorque(double torque);
 
-  ros::NodeHandle* n_;
-  ros::Publisher pub_twist_;
-  ros::Publisher pub_odom_;
-  ros::Publisher pub_gear_state_;
-  ros::Publisher pub_steering_;
-  ros::Subscriber sub_steering_cmd_;
-  ros::Subscriber sub_throttle_cmd_;
-  ros::Subscriber sub_brake_cmd_;
-  ros::Subscriber sub_gear_cmd_;
-  ros::Subscriber sub_model_states_;
-  ros::Timer feedback_timer_;
-  ros::Timer tf_timer_;
+  gazebo_ros::Node::SharedPtr ros_node_;
+  rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr pub_twist_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odom_;
+  rclcpp::Publisher<example_interfaces::msg::UInt8>::SharedPtr pub_gear_state_;
+  rclcpp::Publisher<example_interfaces::msg::Float64>::SharedPtr pub_steering_;
+  rclcpp::Subscription<example_interfaces::msg::Float64>::SharedPtr sub_steering_cmd_;
+  rclcpp::Subscription<example_interfaces::msg::Float64>::SharedPtr sub_throttle_cmd_;
+  rclcpp::Subscription<example_interfaces::msg::Float64>::SharedPtr sub_brake_cmd_;
+  rclcpp::Subscription<example_interfaces::msg::UInt8>::SharedPtr sub_gear_cmd_;
+  // ros::Subscriber sub_model_states_;
+  int feedback_timer_count_;
+  int tf_timer_count_;
+  int tf_timer_thres_;
 
-  tf2_ros::TransformBroadcaster br_;
-  geometry_msgs::Twist twist_;
+  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  geometry_msgs::msg::Twist twist_;
   bool rollover_;
-#if GAZEBO_MAJOR_VERSION >= 9
   ignition::math::Pose3d world_pose_;
-#else
-  gazebo::math::Pose world_pose_;
-#endif
   event::ConnectionPtr update_connection_;
   physics::JointPtr steer_fl_joint_;
   physics::JointPtr steer_fr_joint_;
@@ -86,8 +84,8 @@ private:
   physics::JointPtr wheel_fl_joint_;
   physics::JointPtr wheel_fr_joint_;
   physics::LinkPtr footprint_link_;
-  common::Time last_update_time_;
   std::string frame_id_;
+  common::Time last_update_time_;
 
   // SDF parameters
   std::string robot_name_;
@@ -102,11 +100,11 @@ private:
 
   // Brakes
   double brake_cmd_;
-  ros::Time brake_stamp_;
+  common::Time brake_stamp_;
 
   // Throttle
   double throttle_cmd_;
-  ros::Time throttle_stamp_;
+  common::Time throttle_stamp_;
 
   // Gear
   uint8_t gear_cmd_;
@@ -115,5 +113,3 @@ private:
 GZ_REGISTER_MODEL_PLUGIN(AudibotInterfacePlugin)
 
 }
-
-#endif // AUDIBOTINTERFACEPLUGIN_H

@@ -1,4 +1,5 @@
-#include <audibot_gazebo/AudibotInterfacePlugin.h>
+#include <audibot_gazebo/AudibotInterfacePlugin.hpp>
+#include <gazebo_ros/conversions/builtin_interfaces.hpp>
 
 namespace gazebo {
 
@@ -20,29 +21,12 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
   wheel_fl_joint_ = model->GetJoint("wheel_fl_joint");
   wheel_fr_joint_ = model->GetJoint("wheel_fr_joint");
   footprint_link_ = model->GetLink("base_footprint");
+
   // Load SDF parameters
-  if (sdf->HasElement("pubTf")) {
-    sdf->GetElement("pubTf")->GetValue()->Get(pub_tf_);
-  } else {
-    pub_tf_ = false;
-  }
-
-  if (sdf->HasElement("robotName")) {
-    sdf::ParamPtr sdf_robot_name = sdf->GetElement("robotName")->GetValue();
-    if (sdf_robot_name) {
-      sdf_robot_name->Get(robot_name_);
-    } else {
-      robot_name_ = std::string("");
-    }
-  } else {
-    robot_name_ = std::string("");
-  }
-
-  if (sdf->HasElement("tfFreq")) {
-    sdf->GetElement("tfFreq")->GetValue()->Get(tf_freq_);
-  } else {
-    tf_freq_ = 100.0;
-  }
+  pub_tf_ = sdf->Get<bool>("pub_tf", false).first;
+  robot_name_ = sdf->Get<std::string>("robot_name", "").first;
+  tf_freq_ = std::max(1.0, sdf->Get<double>("tf_freq", 100.0).first);
+  tf_timer_thres_ = (int)(1e3 / tf_freq_);
 
   update_connection_ = event::Events::ConnectWorldUpdateBegin(boost::bind(&AudibotInterfacePlugin::OnUpdate, this, _1));
 
@@ -50,22 +34,21 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
   steer_fr_joint_->SetParam("fmax", 0, 99999.0);
 
   // ROS initialization
-  n_ = new ros::NodeHandle(robot_name_);
+  ros_node_ = gazebo_ros::Node::Get(sdf);
+  tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(ros_node_);
 
-  sub_steering_cmd_ = n_->subscribe("steering_cmd", 1, &AudibotInterfacePlugin::recvSteeringCmd, this);
-  sub_brake_cmd_ = n_->subscribe("brake_cmd", 1, &AudibotInterfacePlugin::recvBrakeCmd, this);
-  sub_throttle_cmd_ = n_->subscribe("throttle_cmd", 1, &AudibotInterfacePlugin::recvThrottleCmd, this);
-  sub_gear_cmd_ = n_->subscribe("gear_cmd", 1, &AudibotInterfacePlugin::recvGearCmd, this);
+  sub_steering_cmd_ = ros_node_->create_subscription<example_interfaces::msg::Float64>("steering_cmd", 1, std::bind(&AudibotInterfacePlugin::recvSteeringCmd, this, std::placeholders::_1));
+  sub_brake_cmd_ = ros_node_->create_subscription<example_interfaces::msg::Float64>("brake_cmd", 1, std::bind(&AudibotInterfacePlugin::recvBrakeCmd, this, std::placeholders::_1));
+  sub_throttle_cmd_ = ros_node_->create_subscription<example_interfaces::msg::Float64>("throttle_cmd", 1, std::bind(&AudibotInterfacePlugin::recvThrottleCmd, this, std::placeholders::_1));
+  sub_gear_cmd_ = ros_node_->create_subscription<example_interfaces::msg::UInt8>("gear_cmd", 1, std::bind(&AudibotInterfacePlugin::recvGearCmd, this, std::placeholders::_1));
 
-  pub_twist_ = n_->advertise<geometry_msgs::TwistStamped> ("twist", 1);
-  pub_gear_state_ = n_->advertise<std_msgs::UInt8> ("gear_state", 1);
-  pub_odom_ = n_->advertise<nav_msgs::Odometry>("odom", 1);
-  pub_steering_ = n_->advertise<std_msgs::Float64>("steering_state", 1);
-  feedback_timer_ = n_->createTimer(ros::Duration(0.02), &AudibotInterfacePlugin::feedbackTimerCallback, this);
+  pub_twist_ = ros_node_->create_publisher<geometry_msgs::msg::TwistStamped>("twist", 1);
+  pub_gear_state_ = ros_node_->create_publisher<example_interfaces::msg::UInt8>("gear_state", 1);
+  pub_odom_= ros_node_->create_publisher<nav_msgs::msg::Odometry>("odom", 1);
+  pub_steering_ = ros_node_->create_publisher<example_interfaces::msg::Float64>("steering_state", 1);
 
-  if (pub_tf_) {
-    tf_timer_ = n_->createTimer(ros::Duration(1.0 / tf_freq_), &AudibotInterfacePlugin::tfTimerCallback, this);
-  }
+  feedback_timer_count_ = 0;
+  tf_timer_count_ = 0;
 
   if (robot_name_.empty()) {
     frame_id_ = footprint_link_->GetName();
@@ -79,25 +62,30 @@ void AudibotInterfacePlugin::OnUpdate(const common::UpdateInfo& info) {
     last_update_time_ = info.simTime;
     return;
   }
+  double time_step = (info.simTime - last_update_time_).Double();
+  last_update_time_ = info.simTime;
 
   twistStateUpdate();
   driveUpdate();
-  steeringUpdate(info);
+  steeringUpdate(time_step);
   dragUpdate();
+
+  if (tf_timer_count_++ >= tf_timer_thres_) {
+    tf_timer_count_ = 0;
+    tfTimerCallback();
+  }
+
+  if (feedback_timer_count_++ >= 20) {
+    feedback_timer_count_ = 0;
+    feedbackTimerCallback();
+  }
 }
 
 void AudibotInterfacePlugin::twistStateUpdate() {
-#if GAZEBO_MAJOR_VERSION >= 9
   world_pose_ = footprint_link_->WorldPose();
   twist_.linear.x = footprint_link_->RelativeLinearVel().X();
   twist_.angular.z = footprint_link_->RelativeAngularVel().Z();
   rollover_ = (fabs(world_pose_.Rot().X()) > 0.2 || fabs(world_pose_.Rot().Y()) > 0.2);
-#else
-  world_pose_ = footprint_link_->GetWorldPose();
-  twist_.linear.x = footprint_link_->GetRelativeLinearVel().x;
-  twist_.angular.z = footprint_link_->GetRelativeAngularVel().z;
-  rollover_ = (fabs(world_pose_.rot.x) > 0.2 || fabs(world_pose_.rot.y) > 0.2);
-#endif
 }
 
 void AudibotInterfacePlugin::driveUpdate() {
@@ -108,8 +96,7 @@ void AudibotInterfacePlugin::driveUpdate() {
   }
 
   // Brakes have precedence over throttle
-  ros::Time current_stamp = ros::Time::now();
-  if ((brake_cmd_ > 0) && ((current_stamp - brake_stamp_).toSec() < 0.25)) {
+  if ((brake_cmd_ > 0) && ((last_update_time_ - brake_stamp_).Double() < 0.25)) {
     double brake_torque_factor = 1.0;
     if (twist_.linear.x < -0.1) {
       brake_torque_factor = -1.0;
@@ -119,7 +106,7 @@ void AudibotInterfacePlugin::driveUpdate() {
 
     setAllWheelTorque(-brake_torque_factor * brake_cmd_);
   } else {
-    if ((current_stamp - throttle_stamp_).toSec() < 0.25) {
+    if ((last_update_time_ - throttle_stamp_).Double() < 0.25) {
       double throttle_torque;
       if (gear_cmd_ == DRIVE) {
         throttle_torque = throttle_cmd_ * 4000.0 - 40.1 * twist_.linear.x;
@@ -137,10 +124,7 @@ void AudibotInterfacePlugin::driveUpdate() {
   }
 }
 
-void AudibotInterfacePlugin::steeringUpdate(const common::UpdateInfo& info) {
-  double time_step = (info.simTime - last_update_time_).Double();
-  last_update_time_ = info.simTime;
-
+void AudibotInterfacePlugin::steeringUpdate(double time_step) {
   // Arbitrarily set maximum steering rate to 800 deg/s
   const double max_rate = 800.0 * M_PI / 180.0 / AUDIBOT_STEERING_RATIO;
   double max_inc = time_step * max_rate;
@@ -156,13 +140,8 @@ void AudibotInterfacePlugin::steeringUpdate(const common::UpdateInfo& info) {
   double left_steer = atan(AUDIBOT_WHEELBASE * t_alph / (AUDIBOT_WHEELBASE - 0.5 * AUDIBOT_TRACK_WIDTH * t_alph));
   double right_steer = atan(AUDIBOT_WHEELBASE * t_alph / (AUDIBOT_WHEELBASE + 0.5 * AUDIBOT_TRACK_WIDTH * t_alph));
 
-#if GAZEBO_MAJOR_VERSION >= 9
   steer_fl_joint_->SetParam("vel", 0, 100.0 * (left_steer - steer_fl_joint_->Position(0)));
   steer_fr_joint_->SetParam("vel", 0, 100.0 * (right_steer - steer_fr_joint_->Position(0)));
-#else
-  steer_fl_joint_->SetParam("vel", 0, 100.0 * (left_steer - steer_fl_joint_->GetAngle(0).Radian()));
-  steer_fr_joint_->SetParam("vel", 0, 100.0 * (right_steer - steer_fr_joint_->GetAngle(0).Radian()));
-#endif
 }
 
 void AudibotInterfacePlugin::dragUpdate() {
@@ -199,7 +178,7 @@ void AudibotInterfacePlugin::stopWheels() {
   wheel_rr_joint_->SetForce(0, -1000.0 * wheel_rr_joint_->GetVelocity(0));
 }
 
-void AudibotInterfacePlugin::recvSteeringCmd(const std_msgs::Float64ConstPtr& msg) {
+void AudibotInterfacePlugin::recvSteeringCmd(const example_interfaces::msg::Float64::ConstSharedPtr msg) {
   if (!std::isfinite(msg->data)) {
     target_angle_ = 0.0;
     return;
@@ -213,48 +192,49 @@ void AudibotInterfacePlugin::recvSteeringCmd(const std_msgs::Float64ConstPtr& ms
   }
 }
 
-void AudibotInterfacePlugin::recvBrakeCmd(const std_msgs::Float64ConstPtr& msg) {
+void AudibotInterfacePlugin::recvBrakeCmd(const example_interfaces::msg::Float64::ConstSharedPtr msg) {
   brake_cmd_ = msg->data;
   if (brake_cmd_ < 0) {
     brake_cmd_ = 0;
   } else if (brake_cmd_ > MAX_BRAKE_TORQUE) {
     brake_cmd_ = MAX_BRAKE_TORQUE;
   }
-  brake_stamp_ = ros::Time::now();
+  brake_stamp_ = last_update_time_;
 }
 
-void AudibotInterfacePlugin::recvThrottleCmd(const std_msgs::Float64ConstPtr& msg) {
+void AudibotInterfacePlugin::recvThrottleCmd(const example_interfaces::msg::Float64::ConstSharedPtr msg) {
   throttle_cmd_ = msg->data;
   if (throttle_cmd_ < 0.0) {
     throttle_cmd_ = 0.0;
   } else if (throttle_cmd_ > 1.0) {
     throttle_cmd_ = 1.0;
   }
-  throttle_stamp_ = ros::Time::now();
+  throttle_stamp_ = last_update_time_;
 }
 
-void AudibotInterfacePlugin::recvGearCmd(const std_msgs::UInt8ConstPtr& msg) {
+void AudibotInterfacePlugin::recvGearCmd(const example_interfaces::msg::UInt8::ConstSharedPtr msg) {
   if (msg->data > REVERSE) {
-    ROS_WARN("Invalid gear command received [%u]", msg->data);
+    RCLCPP_WARN(ros_node_->get_logger(), "Invalid gear command received [%u]", msg->data);
   } else {
     gear_cmd_ = msg->data;
   }
 }
 
-void AudibotInterfacePlugin::feedbackTimerCallback(const ros::TimerEvent& event) {
-  geometry_msgs::TwistStamped twist_msg;
+void AudibotInterfacePlugin::feedbackTimerCallback() {
+  auto current_ros_time = gazebo_ros::Convert<builtin_interfaces::msg::Time>(last_update_time_);
+  geometry_msgs::msg::TwistStamped twist_msg;
   twist_msg.header.frame_id = frame_id_;
-  twist_msg.header.stamp = event.current_real;
+  twist_msg.header.stamp = current_ros_time;
   twist_msg.twist = twist_;
-  pub_twist_.publish(twist_msg);
+  pub_twist_->publish(twist_msg);
 
-  std_msgs::UInt8 gear_state_msg;
+  example_interfaces::msg::UInt8 gear_state_msg;
   gear_state_msg.data = gear_cmd_;
-  pub_gear_state_.publish(gear_state_msg);
+  pub_gear_state_->publish(gear_state_msg);
 
-  nav_msgs::Odometry odom_msg;
+  nav_msgs::msg::Odometry odom_msg;
   odom_msg.header.frame_id = frame_id_;
-  odom_msg.header.stamp = event.current_real;
+  odom_msg.header.stamp = current_ros_time;
   odom_msg.twist.twist = twist_;
   odom_msg.pose.pose.position.x = world_pose_.Pos().X();
   odom_msg.pose.pose.position.y = world_pose_.Pos().Y();
@@ -263,25 +243,19 @@ void AudibotInterfacePlugin::feedbackTimerCallback(const ros::TimerEvent& event)
   odom_msg.pose.pose.orientation.y = world_pose_.Rot().Y();
   odom_msg.pose.pose.orientation.z = world_pose_.Rot().Z();
   odom_msg.pose.pose.orientation.w = world_pose_.Rot().W();
-  pub_odom_.publish(odom_msg);
+  pub_odom_->publish(odom_msg);
 
-  std_msgs::Float64 steering;
+  example_interfaces::msg::Float64 steering;
   steering.data = AUDIBOT_STEERING_RATIO * current_steering_angle_;
-  pub_steering_.publish(steering);
+  pub_steering_->publish(steering);
 }
 
-void AudibotInterfacePlugin::tfTimerCallback(const ros::TimerEvent& event) {
-  // Don't publish TF if the same timestamp as last time
-  // to prevent TF_REPEATED_DATA warning
-  if ((event.current_real - event.last_real).toSec() < 1e-6) {
-    return;
-  }
-  
-  geometry_msgs::TransformStamped t;
+void AudibotInterfacePlugin::tfTimerCallback() {
+  auto current_ros_time = gazebo_ros::Convert<builtin_interfaces::msg::Time>(last_update_time_);
+  geometry_msgs::msg::TransformStamped t;
   t.header.frame_id = "world";
   t.child_frame_id = frame_id_;
-  t.header.stamp = event.current_real;
-#if GAZEBO_MAJOR_VERSION >= 9
+  t.header.stamp = current_ros_time;
   t.transform.translation.x = world_pose_.Pos().X();
   t.transform.translation.y = world_pose_.Pos().Y();
   t.transform.translation.z = world_pose_.Pos().Z();
@@ -289,25 +263,12 @@ void AudibotInterfacePlugin::tfTimerCallback(const ros::TimerEvent& event) {
   t.transform.rotation.x = world_pose_.Rot().X();
   t.transform.rotation.y = world_pose_.Rot().Y();
   t.transform.rotation.z = world_pose_.Rot().Z();
-#else
-  t.transform.translation.x = world_pose_.pos.x;
-  t.transform.translation.y = world_pose_.pos.y;
-  t.transform.translation.z = world_pose_.pos.z;
-  t.transform.rotation.w = world_pose_.rot.w;
-  t.transform.rotation.x = world_pose_.rot.x;
-  t.transform.rotation.y = world_pose_.rot.y;
-  t.transform.rotation.z = world_pose_.rot.z;
-#endif
-  br_.sendTransform(t);
+  tf_broadcaster_->sendTransform(t);
 }
 
 void AudibotInterfacePlugin::Reset() {
 }
 
-AudibotInterfacePlugin::~AudibotInterfacePlugin() {
-  n_->shutdown();
-  delete n_;
-}
+AudibotInterfacePlugin::~AudibotInterfacePlugin() {}
 
-
-}
+} // namespace gazebo
