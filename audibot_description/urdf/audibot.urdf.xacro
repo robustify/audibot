@@ -37,7 +37,7 @@
         <joint_name>wheel_fr_joint</joint_name>
         <joint_name>wheel_rl_joint</joint_name>
         <joint_name>wheel_rr_joint</joint_name>
-        <updateRate>100</updateRate>
+        <update_rate>100</update_rate>
         <ros>
           <namespace>$(arg robot_name)</namespace>
         </ros>
