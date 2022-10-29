@@ -11,7 +11,6 @@ def generate_launch_description():
     urdf_file = os.path.join(pkg_share, 'urdf/audibot.urdf.xacro')
 
     return LaunchDescription([
-        DeclareLaunchArgument('use_sim_time', default_value='false', description='Use simulation clock'),
         DeclareLaunchArgument('start_x', default_value='0.0', description='X coordinate of starting position'),
         DeclareLaunchArgument('start_y', default_value='0.0', description='Y coordinate of starting position'),
         DeclareLaunchArgument('start_z', default_value='0.0', description='Z coordinate of starting position'),
@@ -26,7 +25,7 @@ def generate_launch_description():
             name='robot_state_publisher',
             output='screen',
             parameters=[{
-                'use_sim_time': LaunchConfiguration('use_sim_time'),
+                'use_sim_time': True,
                 'frame_prefix': [LaunchConfiguration('robot_name'), '/'],
                 'publish_frequency': LaunchConfiguration('tf_freq'),
                 'robot_description': Command([f'xacro {urdf_file} pub_tf:=', LaunchConfiguration('pub_tf'), ' blue:=', LaunchConfiguration('blue'), ' robot_name:=', LaunchConfiguration('robot_name')])
