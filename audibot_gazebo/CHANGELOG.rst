@@ -2,8 +2,8 @@
 Changelog for package audibot_gazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.2 (2022-11-01)
+------------------
 * Add nav_msgs dependency to audibot_gazebo
 * Publish odometry and steering angle feedback
 * Remove tf_prefixer.py that is no longer needed in ROS Noetic

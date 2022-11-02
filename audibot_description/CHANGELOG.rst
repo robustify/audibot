@@ -2,8 +2,8 @@
 Changelog for package audibot_description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.2.2 (2022-11-01)
+------------------
 * Removed joint effort and velocity limits
 * Contributors: Micho Radovnikovich
 
