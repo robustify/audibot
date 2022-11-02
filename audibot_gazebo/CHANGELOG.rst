@@ -2,6 +2,13 @@
 Changelog for package audibot_gazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add nav_msgs dependency to audibot_gazebo
+* Publish odometry and steering angle feedback
+* Remove tf_prefixer.py that is no longer needed in ROS Noetic
+* Contributors: Micho Radovnikovich, Tor Børve Rasmussen
+
 0.2.1 (2020-07-29)
 ------------------
 * Bump minimum CMake version to 3.0.2 as recommended for ROS Noetic
