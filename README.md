@@ -4,7 +4,7 @@ This repository contains a Gazebo simulation model of an Audi R8. It is meant to
 
 To customize the model, include `audibot.urdf.xacro` in the `audibot_description` package in another URDF file and add sensors, plugins, etc.
 
-`single_vehicle_example.launch` in the `audibot_gazebo` package shows how a single vehicle can be simulated in the root workspace with no TF prefix.
+`single_vehicle_example.launch` in the `audibot_gazebo` package shows how a single vehicle can be simulated in the root namespace with no TF prefix.
 
 `two_vehicle_example.launch` shows how multiple vehicles can be simulated at the same time, with each in its own namespace and with a unique TF prefix.
 
