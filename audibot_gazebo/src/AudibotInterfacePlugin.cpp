@@ -18,12 +18,12 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
 
 
   if(!rclcpp::ok()){
-    RCLCPP_FATAL(rclcpp::get_logger("AudibotInterfacePlugin"), "A ROS node for Gazebo has not been initialized, unable to load plugin. Load the Gazebo system plugin 'libgazebo_ros_init.so' in the gazebo_ros package");
+    RCLCPP_FATAL(node_handle_->get_logger(), "A ROS node for Gazebo has not been initialized, unable to load plugin. Load the Gazebo system plugin 'libgazebo_ros_init.so' in the gazebo_ros package");
   }
 
   
   world_ = model->GetWorld();
-  RCLCPP_INFO(rclcpp::get_logger("AudibotInterfacePlugin"), "The audibot plugin is loading!");
+  RCLCPP_INFO(node_handle_->get_logger(), "The audibot plugin is loading!");
 
   // Gazebo initialization
   steer_fl_joint_ = model->GetJoint("steer_fl_joint");
@@ -142,10 +142,10 @@ void AudibotInterfacePlugin::driveUpdate() {
 
     setAllWheelTorque(-brake_torque_factor * brake_cmd_);
   } else {
-    RCLCPP_INFO_STREAM_THROTTLE(node_handle_->get_logger(),
-    *node_handle_->get_clock(),
-    1000,
-    "last_time: " << last_time << " throttle_stamp_: " << throttle_stamp_);
+    // RCLCPP_INFO_STREAM_THROTTLE(node_handle_->get_logger(),
+    // *node_handle_->get_clock(),
+    // 1000,
+    // "last_time: " << last_time << " throttle_stamp_: " << throttle_stamp_);
     if ((last_time - throttle_stamp_).Double() < 0.25) {
       double throttle_torque;
       if (gear_cmd_ == DRIVE) {
@@ -250,7 +250,7 @@ void AudibotInterfacePlugin::recvThrottleCmd(const std_msgs::msg::Float64::Const
     throttle_cmd_ = 1.0;
   }
   throttle_stamp_ = last_time;
-  RCLCPP_INFO_STREAM(node_handle_->get_logger(),"throttle_cmd: " << throttle_cmd_);
+  // RCLCPP_INFO_STREAM(node_handle_->get_logger(),"throttle_cmd: " << throttle_cmd_);
 }
 
 void AudibotInterfacePlugin::recvGearCmd(const std_msgs::msg::UInt8::ConstSharedPtr msg) {
@@ -308,6 +308,27 @@ void AudibotInterfacePlugin::tfTimerCallback() {
 }
 
 void AudibotInterfacePlugin::Reset() {
+
+
+  stopWheels();
+  target_angle_ = current_steering_angle_;
+  brake_cmd_ = 0.0;
+  throttle_cmd_ = 0.0;
+  gear_cmd_ = DRIVE;
+  //current_steering_angle_ = 0.0;
+  rollover_ = false;
+
+  steer_fl_joint_->SetForce(0, 0.0);
+  steer_fr_joint_->SetForce(0, 0.0);
+  wheel_rl_joint_->SetForce(0, 0.0);
+  wheel_rr_joint_->SetForce(0, 0.0);
+  wheel_fl_joint_->SetForce(0, 0.0);
+  wheel_fr_joint_->SetForce(0, 0.0);
+  footprint_link_->SetForce(ignition::math::Vector3d(0,0,0));
+  footprint_link_->SetTorque(ignition::math::Vector3d(0,0,0));
+
+  last_time = common::Time();
+
 }
 
 AudibotInterfacePlugin::~AudibotInterfacePlugin() {}

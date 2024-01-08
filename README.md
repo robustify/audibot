@@ -31,3 +31,5 @@ Some useful kinematics parameters:
 - Wheelbase = 2.65 meters
 - Track width = 1.638 meters
 - Wheel radius = 0.36 meters
+
+To reset the world (stop car and return to origin) `ros2 service call /reset_world std_srvs/srv/Empty`
