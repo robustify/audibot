@@ -12,6 +12,7 @@ find_package(gazebo_ros REQUIRED)
 find_package(gazebo_dev REQUIRED)
 find_package(gazebo_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(example_interfaces REQUIRED)
@@ -26,6 +27,7 @@ ament_target_dependencies(audibot_interface_plugin
   rclcpp
   gazebo_ros
   tf2_ros
+  tf2_geometry_msgs
   nav_msgs
   geometry_msgs
   example_interfaces
