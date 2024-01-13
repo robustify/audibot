@@ -1,8 +1,6 @@
 #include <audibot_gazebo/AudibotInterfacePlugin.hpp>
 #include <gazebo_ros/conversions/builtin_interfaces.hpp>
 
-//using std::placeholders::_1;
-
 namespace gazebo {
 
 AudibotInterfacePlugin::AudibotInterfacePlugin() {
@@ -21,7 +19,7 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
     RCLCPP_FATAL(rclcpp::get_logger("AudibotInterfacePlugin"), "A ROS node for Gazebo has not been initialized, unable to load plugin. Load the Gazebo system plugin 'libgazebo_ros_init.so' in the gazebo_ros package");
   }
 
-  
+
   world_ = model->GetWorld();
   RCLCPP_INFO(rclcpp::get_logger("AudibotInterfacePlugin"), "The audibot plugin is loading!");
 
@@ -41,7 +39,6 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
   tf_timer_thres_ = (int)(1e3 / tf_freq_);
 
   model_name_ = model->GetName().substr(0, model->GetName().find("::"));
-  //RCLCPP_INFO(rclcpp::get_logger("AudibotInterfacePlugin"), "The audibot plugin is loading!");
 
   update_connection_ = event::Events::ConnectWorldUpdateBegin(
     std::bind(&AudibotInterfacePlugin::Update, this));
@@ -50,7 +47,6 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
   steer_fr_joint_->SetParam("fmax", 0, 99999.0);
 
   // ROS initialization
-  //ros_node_ = gazebo_ros::Node::Get(sdf);
   node_handle_ = std::make_shared<rclcpp::Node>("control", model_name_);
   executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
 
@@ -83,14 +79,6 @@ void AudibotInterfacePlugin::Load(physics::ModelPtr model, sdf::ElementPtr sdf) 
 
 }
 
-// void AudibotInterfacePlugin::OnUpdate(const common::UpdateInfo& info) {
-//   if (last_update_time_ == common::Time(0)) {
-//     last_update_time_ = info.simTime;
-//     return;
-//   }
-//   double time_step = (info.simTime - last_update_time_).Double();
-//   last_update_time_ = info.simTime;
-
 void AudibotInterfacePlugin::Update() {
 
   common::Time sim_time = world_->SimTime();
@@ -113,8 +101,8 @@ void AudibotInterfacePlugin::Update() {
     feedbackTimerCallback();
   }
 
-    // save last time stamp
-  last_time = sim_time;  
+  // save last time stamp
+  last_time = sim_time;
 }
 
 void AudibotInterfacePlugin::twistStateUpdate() {
@@ -142,10 +130,6 @@ void AudibotInterfacePlugin::driveUpdate() {
 
     setAllWheelTorque(-brake_torque_factor * brake_cmd_);
   } else {
-    // RCLCPP_INFO_STREAM_THROTTLE(node_handle_->get_logger(),
-    // *node_handle_->get_clock(),
-    // 1000,
-    // "last_time: " << last_time << " throttle_stamp_: " << throttle_stamp_);
     if ((last_time - throttle_stamp_).Double() < 0.25) {
       double throttle_torque;
       if (gear_cmd_ == DRIVE) {
@@ -250,7 +234,6 @@ void AudibotInterfacePlugin::recvThrottleCmd(const std_msgs::msg::Float64::Const
     throttle_cmd_ = 1.0;
   }
   throttle_stamp_ = last_time;
-  // RCLCPP_INFO_STREAM(node_handle_->get_logger(),"throttle_cmd: " << throttle_cmd_);
 }
 
 void AudibotInterfacePlugin::recvGearCmd(const std_msgs::msg::UInt8::ConstSharedPtr msg) {
@@ -307,29 +290,7 @@ void AudibotInterfacePlugin::tfTimerCallback() {
   tf_broadcaster_->sendTransform(t);
 }
 
-void AudibotInterfacePlugin::Reset() {
-
-
-  // stopWheels();
-  // target_angle_ = current_steering_angle_;
-  // brake_cmd_ = 0.0;
-  // throttle_cmd_ = 0.0;
-  // gear_cmd_ = DRIVE;
-  // //current_steering_angle_ = 0.0;
-  // rollover_ = false;
-
-  // steer_fl_joint_->SetForce(0, 0.0);
-  // steer_fr_joint_->SetForce(0, 0.0);
-  // wheel_rl_joint_->SetForce(0, 0.0);
-  // wheel_rr_joint_->SetForce(0, 0.0);
-  // wheel_fl_joint_->SetForce(0, 0.0);
-  // wheel_fr_joint_->SetForce(0, 0.0);
-  // footprint_link_->SetForce(ignition::math::Vector3d(0,0,0));
-  // footprint_link_->SetTorque(ignition::math::Vector3d(0,0,0));
-
-  // last_time = common::Time();
-
-}
+void AudibotInterfacePlugin::Reset() {}
 
 AudibotInterfacePlugin::~AudibotInterfacePlugin() {}
 
