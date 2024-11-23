@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+
+    <include file="$(find-pkg-share audibot_gazebo)/launch/gazebo_bringup.launch.py">
+        <arg name="robot_sdf_file" value="$(find-pkg-share audibot_description)/models/orange_audibot/model.sdf" />
+        <arg name="world_sdf_file" value="$(find-pkg-share audibot_gazebo)/worlds/orange_empty_world.sdf" />
+        <arg name="gz_bridge_file" value="$(find-pkg-share audibot_gazebo)/config/ros_gz_bridge.yaml" />
+        <arg name="verbose" value="true" />
+        <arg name="start_paused" value="false" />
+    </include>
+
+    <node pkg="rqt_publisher" exec="rqt_publisher" name="rqt_publisher" />
+
+    <node pkg="rviz2" exec="rviz2" name="audibot_test" args="-d $(find-pkg-share audibot_gazebo)/rviz/audibot_test.rviz">
+        <param name="use_sim_time" value="true" />
+    </node>
+
+</launch>

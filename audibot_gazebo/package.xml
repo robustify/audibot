@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>audibot_gazebo</name>
   <version>0.2.1</version>
@@ -11,19 +10,10 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>rclcpp</depend>
-  <depend>gazebo_ros</depend>
-  <depend>gazebo_dev</depend>
-  <depend>gazebo_msgs</depend>
-  <depend>tf2_ros</depend>
-  <depend>nav_msgs</depend>
-  <depend>tf2_geometry_msgs</depend>
-  <depend>geometry_msgs</depend>
-  <depend>example_interfaces</depend>
-
-  <exec_depend>robot_state_publisher</exec_depend>
-  <exec_depend>rviz2</exec_depend>
-  <exec_depend>audibot_description</exec_depend>
+  <depend>audibot_description</depend>
+  <depend>gz_sim_vendor</depend>
+  <depend>gz_plugin_vendor</depend>
+  <depend>ros_gz</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

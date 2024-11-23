@@ -1,0 +1,313 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+    <model name='blue_audibot'>
+        <link name="base_footprint">
+            <pose>0 0 0 0 0 0</pose>
+            <sensor name="navsat_sensor" type="navsat">
+                <always_on>1</always_on>
+                <update_rate>1</update_rate>
+                <topic>navsat</topic>
+            </sensor>
+        </link>
+
+        <link name="chassis">
+            <sensor name="imu_sensor" type="imu">
+                <always_on>1</always_on>
+                <update_rate>100</update_rate>
+                <visualize>false</visualize>
+                <topic>imu</topic>
+            </sensor>
+            <pose>0 0 0.36 0 0 0</pose>
+
+            <visual name="visual_chassis">
+                <pose>1.37 0 0.03 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>package://audibot_description/models/blue_audibot/meshes/body.dae</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="collision_chassis">
+                <pose>1.37 0 0.03 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>package://audibot_description/models/blue_audibot/meshes/body_collision.stl</uri>
+                    </mesh>
+                </geometry>
+            </collision>
+
+            <inertial>
+                <pose>1.37 0 0.03 0 0 0</pose>
+                <mass>1620.0</mass>
+                <inertia>
+                    <ixx>556.54</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <iyy>1819.6</iyy>
+                    <iyz>0</iyz>
+                    <izz>1954.3</izz>
+                </inertia>
+            </inertial>
+        </link>
+
+        <link name="wheel_rl">
+            <pose>0.0 0.8 0.361 -1.57079632679 0 0</pose>
+            <visual name="visual_wheel_rl">
+                <pose>0 0 0 1.57079632679 3.1415926535 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>package://audibot_description/models/blue_audibot/meshes/wheel.dae</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="collision_wheel_rl">
+                <geometry>
+                    <cylinder>
+                        <radius>0.36</radius>
+                        <length>0.25</length>
+                    </cylinder>
+                </geometry>
+            </collision>
+
+            <inertial>
+                <mass>40.0</mass>
+                <inertia>
+                    <ixx>1.5043</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <iyy>1.5043</iyy>
+                    <iyz>0</iyz>
+                    <izz>2.5920</izz>
+                </inertia>
+            </inertial>
+        </link>
+        <joint name="wheel_rl_joint" type="revolute">
+            <parent>chassis</parent>
+            <child>wheel_rl</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <lower>-1.79769e+308</lower>
+                    <upper>1.79769e+308</upper>
+                </limit>
+                <dynamics>
+                    <damping>0.1</damping>
+                    <spring_reference>0.0</spring_reference>
+                    <spring_stiffness>0.0</spring_stiffness>
+                </dynamics>
+            </axis>
+        </joint>
+
+        <link name="wheel_rr">
+            <pose>0.0 -0.8 0.361 -1.57079632679 0 0</pose>
+            <visual name="visual_wheel_rr">
+                <pose>0 0 0 1.57079632679 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>package://audibot_description/models/blue_audibot/meshes/wheel.dae</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="collision_wheel_rr">
+                <geometry>
+                    <cylinder>
+                        <radius>0.36</radius>
+                        <length>0.25</length>
+                    </cylinder>
+                </geometry>
+            </collision>
+
+            <inertial>
+                <mass>40.0</mass>
+                <inertia>
+                    <ixx>1.5043</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <iyy>1.5043</iyy>
+                    <iyz>0</iyz>
+                    <izz>2.5920</izz>
+                </inertia>
+            </inertial>
+        </link>
+        <joint name="wheel_rr_joint" type="revolute">
+            <parent>chassis</parent>
+            <child>wheel_rr</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <lower>-1.79769e+308</lower>
+                    <upper>1.79769e+308</upper>
+                </limit>
+                <dynamics>
+                    <damping>0.1</damping>
+                    <spring_reference>0.0</spring_reference>
+                    <spring_stiffness>0.0</spring_stiffness>
+                </dynamics>
+            </axis>
+        </joint>
+
+        <link name="wheel_fl">
+            <pose>2.67 0.819 0.361 -1.57079632679 0 0</pose>
+            <visual name="visual_wheel_fl">
+                <pose>0 0 0 1.57079632679 3.1415926535 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>package://audibot_description/models/blue_audibot/meshes/wheel.dae</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="collision_wheel_fl">
+                <geometry>
+                    <cylinder>
+                        <radius>0.36</radius>
+                        <length>0.25</length>
+                    </cylinder>
+                </geometry>
+            </collision>
+
+            <inertial>
+                <mass>40.0</mass>
+                <inertia>
+                    <ixx>1.5043</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <iyy>1.5043</iyy>
+                    <iyz>0</iyz>
+                    <izz>2.5920</izz>
+                </inertia>
+            </inertial>
+        </link>
+        <link name="steer_fl" >
+            <pose>2.67 0.819 0.361 0 0 0</pose>
+            <inertial>
+                <mass>1.0</mass>
+                <inertia>
+                    <ixx>0.05</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <iyy>0.05</iyy>
+                    <iyz>0</iyz>
+                    <izz>0.05</izz>
+                </inertia>
+            </inertial>
+        </link>
+
+        <joint name="wheel_fl_joint" type="revolute">
+            <parent>steer_fl</parent>
+            <child>wheel_fl</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <lower>-1.79769e+308</lower>
+                    <upper>1.79769e+308</upper>
+                </limit>
+                <dynamics>
+                    <damping>0.1</damping>
+                    <spring_reference>0.0</spring_reference>
+                    <spring_stiffness>0.0</spring_stiffness>
+                </dynamics>
+            </axis>
+        </joint>
+
+        <joint name="steer_fl_joint" type="revolute">
+            <parent>chassis</parent>
+            <child>steer_fl</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <lower>-0.6</lower>
+                    <upper>0.6</upper>
+                </limit>
+            </axis>
+        </joint>
+
+        <link name="wheel_fr">
+            <pose>2.67 -0.819 0.361 -1.57079632679 0 0</pose>
+            <visual name="visual_wheel_fr">
+                <pose>0 0 0 1.57079632679 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>package://audibot_description/models/blue_audibot/meshes/wheel.dae</uri>
+                    </mesh>
+                </geometry>
+            </visual>
+            <collision name="collision_wheel_fr">
+                <geometry>
+                    <cylinder>
+                        <radius>0.36</radius>
+                        <length>0.25</length>
+                    </cylinder>
+                </geometry>
+            </collision>
+
+            <inertial>
+                <mass>40.0</mass>
+                <inertia>
+                    <ixx>1.5043</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <iyy>1.5043</iyy>
+                    <iyz>0</iyz>
+                    <izz>2.5920</izz>
+                </inertia>
+            </inertial>
+        </link>
+        <link name="steer_fr" >
+            <pose>2.67 -0.819 0.361 0 0 0</pose>
+            <inertial>
+                <mass>1.0</mass>
+                <inertia>
+                    <ixx>0.05</ixx>
+                    <ixy>0</ixy>
+                    <ixz>0</ixz>
+                    <iyy>0.05</iyy>
+                    <iyz>0</iyz>
+                    <izz>0.05</izz>
+                </inertia>
+            </inertial>
+        </link>
+
+        <joint name="wheel_fr_joint" type="revolute">
+            <parent>steer_fr</parent>
+            <child>wheel_fr</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <lower>-1.79769e+308</lower>
+                    <upper>1.79769e+308</upper>
+                </limit>
+                <dynamics>
+                    <damping>0.1</damping>
+                    <spring_reference>0.0</spring_reference>
+                    <spring_stiffness>0.0</spring_stiffness>
+                </dynamics>
+            </axis>
+        </joint>
+
+        <joint name="steer_fr_joint" type="revolute">
+            <parent>chassis</parent>
+            <child>steer_fr</child>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <lower>-0.6</lower>
+                    <upper>0.6</upper>
+                </limit>
+            </axis>
+        </joint>
+
+        <joint name="chassis_joint" type="fixed">
+            <parent>base_footprint</parent>
+            <child>chassis</child>
+        </joint>
+
+        <plugin filename="AudibotInterfacePlugin" name="audibot_gazebo::AudibotInterfacePlugin">
+            <pub_tf>true</pub_tf>
+            <pub_heading>true</pub_heading>
+        </plugin>
+
+        <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+            <topic>/model/audibot/joint_states</topic>
+        </plugin>
+    </model>
+</sdf>

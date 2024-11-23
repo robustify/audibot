@@ -1,131 +1,130 @@
 #pragma once
 
-#include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/float64.hpp>
-#include <std_msgs/msg/u_int8.hpp>
-#include <geometry_msgs/msg/twist_stamped.hpp>
-#include <nav_msgs/msg/odometry.hpp>
+#include <gz/sim/System.hh>
+#include <gz/sim/Model.hh>
+#include <gz/transport/Node.hh>
+#include <gz/msgs.hh>
 
-#include <gazebo/common/Plugin.hh>
-#include <gazebo/common/Time.hh>
-#include <gazebo/physics/physics.hh>
-#include <gazebo_ros/node.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <tf2_ros/transform_broadcaster.h>
+using namespace gz;
+using namespace sim;
 
-using namespace std::placeholders;
+namespace audibot_gazebo {
 
-namespace gazebo {
+    class AudibotSpeedControl {
+        public:
+            AudibotSpeedControl() {}
+            void reset() { int_throttle_ = 0.0; }
+            void update(const double& speed_cmd, const double& speed_meas, const double& dt, double& throttle_cmd, double& brake_cmd) {
+                if (!std::isfinite(speed_meas)) {
+                    brake_cmd = 0.0;
+                    throttle_cmd = 0.0;
+                    return;
+                }
 
-// Kinematics parameters
-#define AUDIBOT_STEERING_RATIO      17.3  // Ratio between steering wheel angle and tire angle
-#define AUDIBOT_LOCK_TO_LOCK_REVS   3.2   // Number of steering wheel turns to go from lock to lock
-#define AUDIBOT_MAX_STEER_ANGLE     (M_PI * AUDIBOT_LOCK_TO_LOCK_REVS / AUDIBOT_STEERING_RATIO)
-#define AUDIBOT_WHEELBASE           2.65  // Distance between front and rear axles
-#define AUDIBOT_TRACK_WIDTH         1.638 // Distance between front wheels
+                double speed_error = speed_cmd - std::abs(speed_meas);
+                brake_cmd = std::clamp(-BRAKE_GAIN * speed_error, 0.0, 4000.0);
+                int_throttle_ = std::clamp(int_throttle_ + dt * THROTTLE_KI * speed_error, 0.0, 0.3);
+                throttle_cmd = std::clamp(THROTTLE_KP * speed_error + int_throttle_, 0.0, 1.0);
+            }
 
-// Drag parameters
-#define ROLLING_RESISTANCE_COEFF  0.01
-#define AERO_DRAG_COEFF           0.35
-#define GRAVITY_ACCEL             9.81
-#define VEHICLE_MASS              1700.0
-#define WHEEL_RADIUS              0.36
-#define MAX_BRAKE_TORQUE          8000.0
+        private:
+            static constexpr double THROTTLE_KP = 0.2;
+            static constexpr double THROTTLE_KI = 0.1;
+            static constexpr double BRAKE_GAIN = 3000.0;
 
-// Gear states
-enum { DRIVE = 0, REVERSE = 1 };
+            double int_throttle_ = 0.0;
+    };
 
-class AudibotInterfacePlugin : public ModelPlugin {
-public:
-  AudibotInterfacePlugin();
-  virtual ~AudibotInterfacePlugin();
+    class AudibotInterfacePlugin
+    : public System,
+        public ISystemConfigure,
+        public ISystemPreUpdate,
+        public ISystemPostUpdate
+    {
+        public:
+            AudibotInterfacePlugin();
+            ~AudibotInterfacePlugin() override;
 
-protected:
-  virtual void Load(physics::ModelPtr model, sdf::ElementPtr sdf);
-  //virtual void LoadControllerSettings(physics::ModelPtr _model, sdf::ElementPtr _sdf);  
-  virtual void Update();
-  // void UpdateDynamics(double dt);
-  // void UpdateState(double dt);  
-  virtual void Reset();
+            void Configure(const Entity & _entity, const std::shared_ptr<const sdf::Element> & _sdf, EntityComponentManager & _ecm, EventManager & _eventMgr) override;
 
-private:
-  void feedbackTimerCallback();
-  void tfTimerCallback();
-  void recvSteeringCmd(const std_msgs::msg::Float64::ConstSharedPtr msg);
-  void recvThrottleCmd(const std_msgs::msg::Float64::ConstSharedPtr msg);
-  void recvBrakeCmd(const std_msgs::msg::Float64::ConstSharedPtr msg);
-  void recvGearCmd(const std_msgs::msg::UInt8::ConstSharedPtr msg);
-  void twistStateUpdate();
-  void driveUpdate();
-  void steeringUpdate(double time_step);
-  void dragUpdate();
-  void stopWheels();
-  void setAllWheelTorque(double torque);
-  void setRearWheelTorque(double torque);
+            void PreUpdate( const UpdateInfo & _info, EntityComponentManager & _ecm) override;
 
-  //gazebo_ros::Node::SharedPtr ros_node_;
-  std::shared_ptr<rclcpp::executors::MultiThreadedExecutor> executor_;
-  std::shared_ptr<rclcpp::Node> node_handle_;
+            void PostUpdate(const UpdateInfo & _info, const EntityComponentManager & _ecm) override;
 
-  rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr pub_twist_;
-  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odom_;
-  rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr pub_gear_state_;
-  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_steering_;
-  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr sub_steering_cmd_;
-  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr sub_throttle_cmd_;
-  rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr sub_brake_cmd_;
-  rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_gear_cmd_;
-  // ros::Subscriber sub_model_states_;
-  int feedback_timer_count_;
-  int tf_timer_count_;
-  int tf_timer_thres_;
+        private:
+            // Sim interaction
+            Model model_;
+            Entity steer_fl_joint_;
+            Entity steer_fr_joint_;
+            Entity wheel_rl_joint_;
+            Entity wheel_rr_joint_;
+            Entity wheel_fl_joint_;
+            Entity wheel_fr_joint_;
+            Entity world_entity_;
+            transport::Node node_;
+            transport::Node::Publisher pub_twist_;
+            transport::Node::Publisher pub_pose_;
+            transport::Node::Publisher pub_gnss_heading_;
+            static constexpr double TWIST_SAMPLE_TIME = 0.01;
+            static constexpr double GNSS_HEADING_SAMPLE_TIME = 0.02;
 
-  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-  geometry_msgs::msg::Twist twist_;
-  bool rollover_;
-  ignition::math::Pose3d world_pose_;
-  event::ConnectionPtr update_connection_;
-  
-  /// \brief The parent World
-  physics::WorldPtr world_;
+            // Persistent internal values
+            uint64_t twist_pub_stamp_ = 0;
+            uint64_t heading_pub_stamp_ = 0;
+            double current_bicycle_angle_ = 0.0;
+            bool first_update_ = true;
+            uint64_t current_time_ = 0;
+            bool rollover_ = false;
+            math::Pose3d last_vehicle_pose_;
+            double current_speed_ = 0.0;
+            msgs::Pose_V posev_msg_;
+            bool publish_ground_truth_pose_;
+            bool publish_gnss_heading_;
+            double world_heading_offset_;
 
-  physics::JointPtr steer_fl_joint_;
-  physics::JointPtr steer_fr_joint_;
-  physics::JointPtr wheel_rl_joint_;
-  physics::JointPtr wheel_rr_joint_;
-  physics::JointPtr wheel_fl_joint_;
-  physics::JointPtr wheel_fr_joint_;
-  physics::LinkPtr footprint_link_;
-  std::string frame_id_;
+            // Kinematics parameters
+            static constexpr double AUDIBOT_STEERING_RATIO =      17.3;  // Ratio between steering wheel angle and tire angle
+            static constexpr double AUDIBOT_LOCK_TO_LOCK_REVS =   3.2;   // Number of steering wheel turns to go from lock to lock
+            static constexpr double AUDIBOT_MAX_STEER_ANGLE =     (M_PI * AUDIBOT_LOCK_TO_LOCK_REVS / AUDIBOT_STEERING_RATIO);
+            static constexpr double AUDIBOT_WHEELBASE =           2.67;  // Distance between front and rear axles
+            static constexpr double AUDIBOT_TRACK_WIDTH =         1.638; // Distance between front wheels
+            static constexpr double AUDIBOT_MAX_STEER_RATE =      800.0 * M_PI / 180.0 / AUDIBOT_STEERING_RATIO;
+            static constexpr double AUDIBOT_MAX_SPEED =           130.0 * 0.44704;
 
-  /// \brief save last_time
-  common::Time last_time;
+            // Drag parameters
+            static constexpr double ROLLING_RESISTANCE_COEFF =  0.01;
+            static constexpr double AERO_DRAG_COEFF =           0.35;
+            static constexpr double GRAVITY_ACCEL =             9.81;
+            static constexpr double VEHICLE_MASS =              1700.0;
+            static constexpr double WHEEL_RADIUS =              0.36;
+            static constexpr double MAX_BRAKE_TORQUE =          5000.0;
 
-  std::string model_name_;
+            // Longitudinal control inputs
+            uint64_t speed_cmd_stamp_ = 0;
+            uint64_t brake_cmd_stamp_ = 0;
+            uint64_t throttle_cmd_stamp_ = 0;
+            double speed_cmd_ = 0.0;
+            double brake_cmd_ = 0.0;
+            double throttle_cmd_ = 0.0;
+            AudibotSpeedControl speed_control_;
+            void recvThrottleCmd(const gz::msgs::Double& msg);
+            void recvBrakeCmd(const gz::msgs::Double& msg);
+            void recvSpeedCmd(const gz::msgs::Double& msg);
 
-  // SDF parameters
-  std::string robot_name_;
-  bool pub_tf_;
-  double tf_freq_;
+            // Steering wheel angle command
+            uint64_t steering_cmd_stamp_ = 0;
+            double target_bicycle_angle_ = 0.0;
+            void recvSteeringCmd(const gz::msgs::Double& msg);
 
-  // Steering values
-  double right_angle_;
-  double left_angle_;
-  double target_angle_;
-  double current_steering_angle_;
+            // Gear shift command
+            enum class AudibotGear : uint8_t {
+                DRIVE = 0,
+                REVERSE = 1
+            };
+            AudibotGear gear_cmd_ = AudibotGear::DRIVE;
+            void recvGearCmd(const gz::msgs::UInt32& msg);
 
-  // Brakes
-  double brake_cmd_;
-  common::Time brake_stamp_;
-
-  // Throttle
-  double throttle_cmd_;
-  common::Time throttle_stamp_;
-
-  // Gear
-  uint8_t gear_cmd_;
-};
-
-GZ_REGISTER_MODEL_PLUGIN(AudibotInterfacePlugin)
+            bool isTimeout(const uint64_t& stamp);
+    };
 
 }

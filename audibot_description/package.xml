@@ -1,26 +1,16 @@
 <?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>audibot_description</name>
   <version>0.2.1</version>
   <description>
-    Meshes and URDF descriptions for audibot
+    Meshes and SDF descriptions for audibot
   </description>
   <maintainer email="mradov@gmail.com">Micho Radovnikovich</maintainer>
   <license>BSD</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <exec_depend>urdf</exec_depend>
-  <exec_depend>xacro</exec_depend>
-  <exec_depend>joint_state_publisher</exec_depend>
-  <exec_depend>joint_state_publisher_gui</exec_depend>
-  <exec_depend>robot_state_publisher</exec_depend>  
-  <exec_depend>gazebo_ros_pkgs</exec_depend>
-  <exec_depend>gazebo_plugins</exec_depend>  
-
   <export>
     <build_type>ament_cmake</build_type>
-    <gazebo_ros gazebo_resource_path="${prefix}"/>
   </export>
 </package>
