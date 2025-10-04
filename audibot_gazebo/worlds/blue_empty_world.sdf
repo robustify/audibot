@@ -57,11 +57,6 @@
             </plane>
           </geometry>
           <material>
-            <!-- <pbr>
-              <metal>
-                <albedo_map>package://ugv_lecture_gazebo/media/materials/textures/grass.jpg</albedo_map>
-              </metal>
-            </pbr> -->
             <ambient>0.8 0.8 0.8 1</ambient>
             <diffuse>0.8 0.8 0.8 1</diffuse>
             <specular>0.8 0.8 0.8 1</specular>
