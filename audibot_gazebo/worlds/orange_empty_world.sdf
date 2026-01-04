@@ -10,6 +10,9 @@
     <plugin name='gz::sim::systems::UserCommands' filename='gz-sim-user-commands-system'/>
     <plugin name='gz::sim::systems::SceneBroadcaster' filename='gz-sim-scene-broadcaster-system'/>
     <plugin name='gz::sim::systems::Contact' filename='gz-sim-contact-system'/>
+    <plugin name='gz::sim::systems::Sensors' filename='gz-sim-sensors-system'>
+      <render_engine>ogre</render_engine>
+    </plugin>
     <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu" />
     <gravity>0 0 -9.8</gravity>
     <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
@@ -113,6 +116,10 @@
           <sensor element_id="chassis::imu_sensor" action="modify">
             <update_rate>100</update_rate>
             <topic>audibot/imu</topic>
+          </sensor>
+          <sensor element_id="camera::camera_sensor" action="modify">
+            <update_rate>30</update_rate>
+            <topic>audibot/image_raw</topic>
           </sensor>
         </experimental:params>
       </include>
