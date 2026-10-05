@@ -307,7 +307,7 @@
                     <optical_frame_id>camera_optical</optical_frame_id>
                 </camera>
                 <topic>image_raw</topic>
-                <frame_id>camera</frame_id>
+                <frame_id>camera_optical</frame_id>
             </sensor>
         </link>
         <link name="camera_optical">
